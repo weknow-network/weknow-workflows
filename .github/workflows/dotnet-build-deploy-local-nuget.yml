@@ -67,7 +67,7 @@ jobs:
       - name: GitHub Package Registry Tool Install
         run: dotnet tool install --global --verbosity minimal --no-cache gpr
       - name: NuGet Push (repo = ${{ github.repository }}) 
-        run: gpr push --api-key ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --repository weknow-network --retries 3 ./out/**/*.nupkg
+        run: gpr push --api-key ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --retries 3 ./out/**/*.nupkg
         # run: gpr push --api-key ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --repository ${{ github.repository }} --retries 3 ./out/**/*.nupkg
   
   on-failure:
