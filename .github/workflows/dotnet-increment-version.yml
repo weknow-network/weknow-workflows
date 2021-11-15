@@ -1,0 +1,30 @@
+name: Increment Version (Directory.Build.props)
+
+# doc:               https://docs.github.com/en/actions
+# variables:         https://docs.github.com/en/actions/learn-github-actions/environment-variables
+# secrets:           https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#example-17
+# env:               https://docs.github.com/en/actions/learn-github-actions/environment-variables
+# reusable workflow: https://docs.github.com/en/actions/learn-github-actions/reusing-workflows#access-to-reusable-workflows
+
+on: 
+  workflow_call:
+  
+jobs:
+  version_increment:
+    name: Increment Version
+    runs-on: ubuntu-latest    
+    
+    steps:
+      - uses: actions/checkout@v2
+  
+      - name: Increment Version
+        run: |
+          perl -pi -e 's/([0-9]+)\.([0-9]+)\.([0-9]+)/"$1.$2.${\( $3+1 )}"/eg' Directory.Build.props
+        shell: bash
+      - name: Commit changes
+        uses: EndBug/add-and-commit@v7
+        with:
+          author_name: CI/CD
+          author_email: ${{ inputs.author-email }}
+          message: "Increment Version"
+          add: "Directory.Build.props"
