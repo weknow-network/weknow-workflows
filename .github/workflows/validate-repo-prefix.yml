@@ -40,7 +40,8 @@ jobs:
     
     steps:    
       - id: throw-on-failure
-        uses: weknow-network/weknow-throw-on-failure@v4     
+        if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+        uses: weknow-network/weknow-throw-on-failure@v6       
 
       - name: Validate repo name
         if: ${{ !startsWith(github.repository, needs.var.outputs.full-prefix ) }}
