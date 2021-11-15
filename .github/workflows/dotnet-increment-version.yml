@@ -18,7 +18,7 @@ jobs:
     steps:
     
       - id: throw-on-failure
-        uses: weknow-network/weknow-throw-on-failure@v2  
+        uses: weknow-network/weknow-throw-on-failure@v3  
 
       - uses: actions/checkout@v2
   
@@ -39,4 +39,4 @@ jobs:
   #   runs-on: ubuntu-latest
   #   steps:
   #     - id: throw-on-failure
-  #       uses: weknow-network/weknow-throw-on-failure@v2     
+  #       uses: weknow-network/weknow-throw-on-failure@v3     
