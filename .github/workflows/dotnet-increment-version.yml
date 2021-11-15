@@ -20,7 +20,7 @@ jobs:
     
       - id: throw-on-failure
         if: ${{ github.event.workflow_run.conclusion == 'failure' }}
-        uses: weknow-network/weknow-throw-on-failure@v6    
+        uses: weknow-network/weknow-throw-on-failure@v7    
   
       - name: Increment Version
         run: |
@@ -40,4 +40,4 @@ jobs:
   #   steps:
   #     - id: throw-on-failure
   #      if: ${{ github.event.workflow_run.conclusion == 'failure' }}
-  #      uses: weknow-network/weknow-throw-on-failure@v6    
+  #      uses: weknow-network/weknow-throw-on-failure@v7    
