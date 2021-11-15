@@ -1,0 +1,81 @@
+name: Build & Deploy NuGet
+
+# doc:               https://docs.github.com/en/actions
+# variables:         https://docs.github.com/en/actions/learn-github-actions/environment-variables
+# secrets:           https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#example-17
+# env:               https://docs.github.com/en/actions/learn-github-actions/environment-variables
+# reusable workflow: https://docs.github.com/en/actions/learn-github-actions/reusing-workflows#access-to-reusable-workflows
+
+on: 
+  workflow_call:
+    inputs:
+      build-config:
+        type: string
+        description: "Build configuration like Release, Debug, etc."
+        required: false
+        default: "Release"
+      dotnet-version:
+        type: string
+        description: "The .NET version."
+        required: false
+        default: "6.0.x"
+      include-prerelease:
+        type: boolean
+        description: "Indicate whether to include prerelease .NET version."
+        required: false
+        default: false
+  
+jobs:
+  version_increment:
+    name: Increment Version
+    runs-on: ubuntu-latest    
+    
+    steps:
+      - uses: actions/checkout@v2
+  
+      - name: Increment Version
+        run: |
+          perl -pi -e 's/([0-9]+)\.([0-9]+)\.([0-9]+)/"$1.$2.${\( $3+1 )}"/eg' Directory.Build.props
+        shell: bash
+      - name: Commit changes
+        uses: EndBug/add-and-commit@v7
+        with:
+          author_name: CI/CD
+          author_email: ${{ inputs.author-email }}
+          message: "Increment Version"
+          add: "Directory.Build.props"
+
+  build:
+    needs: version_increment
+    name: Build
+    runs-on: ubuntu-latest    
+    
+    steps:
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: ${{ inputs.dotnet-version }}
+          include-prerelease: ${{ inputs.include-prerelease }}
+  
+      - name: Restore dependencies
+        run: dotnet restore /property:Configuration=${{ inputs.build-config }} 
+        shell: bash
+      - name: Build
+        run: dotnet build  --configuration ${{ inputs.build-config }} --no-restore -o out
+        shell: bash
+      - name: Test
+        run: dotnet test --filter Category=CI --configuration ${{ inputs.build-config }} --no-restore --no-build --verbosity normal -o out
+        shell: bash
+
+  publish_nuget:
+    needs: build
+    name: Publish NuGet (local registry)
+    runs-on: ubuntu-latest    
+
+    steps:
+      - name: GitHub Package Registry Tool Install
+        run: dotnet tool install --global --verbosity minimal --no-cache gpr
+      - name: NuGet Push with GPR
+        run: gpr push --api-key ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --repository ${{ github.repository }} --retries 3 **/*.nupkg
+  
