@@ -54,9 +54,9 @@ jobs:
         run: echo $(ls)
         shell: bash
 
-      - name: NuGet push ($GITHUB_OWNER)
+      - name: NuGet push 
         run: |
-          dotnet nuget push ./out/**/*.nupkg --source github --skip-duplicate --no-symbols false
+          dotnet nuget push ./out/**/*.nupkg --source github -k ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --skip-duplicate
 
       # - name: NuGet push ({{ github.repository_owner }})
       #   run: |
