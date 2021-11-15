@@ -35,9 +35,9 @@ on:
         required: true  
 
 jobs:
-  build:
+  build-publish_nuget:
     # if: ${{ github.event.workflow_run.conclusion != 'failure' }}
-    name: Build
+    name: Build & Publish NuGet
     runs-on: ubuntu-latest    
     # if: github.ref == 'refs/heads/master' || github.event_name == 'release'   
 
@@ -63,15 +63,7 @@ jobs:
       - name: .NET Test
         run: dotnet test --filter Category=CI --configuration ${{ inputs.build-config }} --no-restore --no-build --verbosity normal -o out
         shell: bash
-
-  publish_nuget:
-    needs: [build]
-    name: Publish Nuget
-    runs-on: ubuntu-latest    
-    # if: github.ref == 'refs/heads/master' || github.event_name == 'release'   
-
-    steps:
-
+          
       # - name: ECHO
       #   run: echo "gpr push --api-key ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --repository ${{ github.repository }} --retries 3 ./out/**/*.nupkg"
       #   shell: bash
