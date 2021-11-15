@@ -45,7 +45,7 @@ jobs:
       - uses: actions/checkout@v2
    
       - id: throw-on-failure
-        uses: weknow-network/weknow-throw-on-failure@v3     
+        uses: weknow-network/weknow-throw-on-failure@v4     
 
       - name: Build Setup (.NET)
         uses: actions/setup-dotnet@v1
