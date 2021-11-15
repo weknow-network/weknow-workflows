@@ -1,0 +1,32 @@
+name: Validate prefix of repo name (enforce convention)
+
+# doc:               https://docs.github.com/en/actions
+# variables:         https://docs.github.com/en/actions/learn-github-actions/environment-variables
+# secrets:           https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#example-17
+# env:               https://docs.github.com/en/actions/learn-github-actions/environment-variables
+# reusable workflow: https://docs.github.com/en/actions/learn-github-actions/reusing-workflows#access-to-reusable-workflows
+
+on: 
+  workflow_call:
+    inputs:
+      organization:
+        type: string
+        description: "github organization / user of the repo"
+        required: true
+      repo-prefix:
+        type: string
+        description: "expected prefix of the repo name"
+        required: true
+
+jobs:
+  validate-repo-prefix:
+    name: Increment Version
+    runs-on: ubuntu-latest    
+    
+    steps:
+      - name: Validate repo name
+        if: ${{ !startsWith(github.repository, '${{ input.organization }}/${{ input.repo-prefix }}') }}
+        uses: actions/github-script@v3
+        with:
+          script: |
+              core.setFailed('Repo name [${{ github.repository }}] must start with [${{ input.organization }}/${{ input.repo-prefix }}]: ${{ startsWith(github.repository, '${{ input.repo-prefix }}') }}')
