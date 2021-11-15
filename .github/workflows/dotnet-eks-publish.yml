@@ -1,0 +1,360 @@
+name: Publish to EKS
+
+# doc:               https://docs.github.com/en/actions
+# variables:         https://docs.github.com/en/actions/learn-github-actions/environment-variables
+# secrets:           https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#example-17
+# env:               https://docs.github.com/en/actions/learn-github-actions/environment-variables
+# reusable workflow: https://docs.github.com/en/actions/learn-github-actions/reusing-workflows#access-to-reusable-workflows
+
+on: 
+  workflow_call:
+    inputs:
+      ns-version:
+        type: number
+        description: "version of the namespace"
+        required: true
+      probs-enabled:
+        type: boolean
+        description: "indicate whether to enable health & readiness"
+        required: false
+        default: true
+      vault-inject-enabled:
+        type: boolean
+        description: "indicate whether to enable vault inject"
+        required: false
+        default: true
+      ingress-enabled:
+        type: boolean
+        description: "indicate whether to enable ingress"
+        required: false
+        default: true
+      ingress-tls-secret:
+        type: string
+        description: "the name of the ingress tls"
+        required: true
+      ingress-tls-secret-ns:
+        type: string
+        description: "the namespace of the ingress tls"
+        required: true
+      eks-cluster-name:
+        type: string
+        description: "the cluster name"
+        required: true
+      eks-region:
+        type: string
+        description: "the cluster region"
+        required: true
+      helm-version:
+        type: string
+        description: "the HELM version"
+        required: false
+        default: 3.7.1
+      repo-owner:
+        type: string
+        description: "the repo owner"
+        required: true
+      pkg-secret-name:
+        type: string
+        description: "the name of github package secret (which allow to fetch the image)"
+        required: true
+
+    secrets:
+      EKS_ACCESS_KEY_ID:
+        description: "aws access key id."
+        required: true  
+      EKS_ACCESS_KEY_SECRET:
+        description: "aws access key secret."
+        required: true  
+      WK_VAULT_NAMESPACE:
+        description: "vault namespace."
+        required: true  
+      WK_VAULT_UNSEAL_KEY:
+        description: "vault unseal key."
+        required: true  
+      WK_VAULT_ROOT_TOKEN:
+        description: "vault root token."
+        required: true  
+
+jobs:
+  var:
+    name: Set variables
+    runs-on: ubuntu-latest
+
+    steps:
+      - id: throw-on-failure  
+        if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+        uses: weknow-network/weknow-throw-on-failure@v8    
+
+      - name: Checkout
+        uses: actions/checkout@v2
+  
+      - name: Short Name
+        id: short-name
+        run: echo ::set-output name=value::$(echo "$GITHUB_REPOSITORY" | perl -p -e 's/weknow-network\/wk-net-svc-(.*)/"$1"/eg')
+  
+      - name: Full Name
+        id: full-name
+        run: echo ::set-output name=value::$(echo "${{ steps.short-name.outputs.value }}-v${{ inputs.ns-version}}")
+  
+      - name: Namespace
+        id: ns
+        run: echo ::set-output name=value::$(echo "wk-${{ steps.full-name.outputs.value }}")
+  
+      - name: Chart File
+        id: chart-file
+        run: echo ::set-output name=value::$(echo "$((find . -name "Chart.yaml" -print &) | head -n 1)") # assuming single chart
+      - name: Chart Folder
+        id: chart-folder
+        run: echo ::set-output name=value::$(echo "$(dirname ${{ steps.chart-file.outputs.value }})")
+
+    outputs:
+      short-name: ${{ steps.short-name.outputs.value }}
+      full-name: ${{ steps.full-name.outputs.value }}
+      ns: ${{ steps.ns.outputs.value }}
+      chart-file: ${{ steps.chart-file.outputs.value }}
+      chart-folder: ${{ steps.chart-folder.outputs.value }}
+
+  prepare-publish-to-eks:
+    needs: var
+    name: Prepare publish to EKS
+    runs-on: ubuntu-latest
+
+    steps:
+      - id: throw-on-failure  
+        if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+        uses: weknow-network/weknow-throw-on-failure@v8    
+
+      - name: Checkout
+        uses: actions/checkout@v2
+  
+# ----------------------  SETUP + CREDENTIALS ----------------------------      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.EKS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.EKS_ACCESS_KEY_SECRET }}
+          aws-region: ${{ inputs.eks-region }}
+  
+      - name: Kubectl tool installer
+        uses: Azure/setup-kubectl@v1
+      
+      - id: install-aws-cli
+        uses: unfor19/install-aws-cli-action@v1
+        with:
+          version: 2.0.30
+          verbose: false
+          aws-access-key-id: ${{ secrets.EKS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.EKS_ACCESS_KEY_SECRET }}
+          aws-region: ${{ inputs.eks-region }}        
+          
+      - run: aws eks --region ${{ inputs.eks-region }} update-kubeconfig --name ${{ inputs.eks-cluster-name }} --alias ${{ inputs.eks-cluster-name }}
+        shell: bash
+  
+# ----------------------  CREATE NAMESPACE ----------------------------
+      - name: Create Namespace (and import TLS secret)
+        run: |
+          if [[ $(kubectl get namespaces | grep ${{ needs.var.outputs.ns }}) ]]; then	
+            echo "namespace exists"
+          else
+            echo "Create a new namespace '${{ needs.var.outputs.ns }}'"
+            kubectl create namespace ${{ needs.var.outputs.ns }}
+          
+            if [[ $(kubectl -n ${{ needs.var.outputs.ns }} get secret | grep ${{ inputs.ingress-tls-secret }}) ]]; then
+               echo "Secret '${{ inputs.ingress-tls-secret }}' in the namespace '${{ needs.var.outputs.ns }}' already exists"
+            elif [[ $(kubectl -n default get secret | grep ${{ inputs.ingress-tls-secret }}) ]]; then
+                echo "Import '${{ inputs.ingress-tls-secret }}' private key for SSL certificate from the '${{ inputs.ingress-tls-secret-ns }}' namespace"
+                kubectl get secret ${{ inputs.ingress-tls-secret }} -n ${{ inputs.ingress-tls-secret-ns }} -o yaml | \
+                sed 's/namespace: ${{ inputs.ingress-tls-secret-ns }}/namespace: ${{ needs.var.outputs.ns }}/' | \
+                kubectl create -f -
+            fi
+          fi
+
+# ----------------------  VAULT ----------------------------
+      - name: Vault - Create Service Account
+        run: |
+          if [[ $(kubectl -n ${{ needs.var.outputs.ns }} get sa | grep ${{ needs.var.outputs.ns }}-vault-sa) ]]; then
+              echo "Service account '${{ needs.var.outputs.ns }}-vault-sa' in the namespace '${{ needs.var.outputs.ns }}' already exists"
+          else
+              echo "Create a new vault service account '${{ needs.var.outputs.ns }}-vault-sa' in the namespace '${{ needs.var.outputs.ns }}', if not exists"
+              kubectl -n ${{ needs.var.outputs.ns }} create sa ${{ needs.var.outputs.ns }}-vault-sa
+          
+              echo "Create a new yaml file 'Role.yaml'"
+          cat > Role.yaml <<EOF 
+          kind: Role
+          apiVersion: rbac.authorization.k8s.io/v1
+          metadata:  
+            name: ${{ needs.var.outputs.ns }}-vault-sa-role
+            namespace: ${{ needs.var.outputs.ns }}
+          rules:
+          - apiGroups: ["", "extensions", "apps"]
+            resources: ["deployments", "replicasets", "pods"]
+            verbs: ["get", "list", "watch", "create", "update", "patch", "delete"] # You can also use ["*"]
+          EOF
+          echo "Create a new yaml file 'RoleBinding.yaml'"
+          cat > RoleBinding.yaml <<EOF 
+          kind: RoleBinding
+          apiVersion: rbac.authorization.k8s.io/v1
+          metadata: 
+            name: ${{ needs.var.outputs.ns }}-vault-sa-role-binding
+            namespace: ${{ needs.var.outputs.ns }}
+          subjects: 
+          - kind: ServiceAccount 
+            name: ${{ needs.var.outputs.ns }}-vault-sa
+            namespace: ${{ needs.var.outputs.ns }}
+            apiGroup: ""
+          roleRef: 
+            kind: Role
+            name: ${{ needs.var.outputs.ns }}-vault-sa-role
+            apiGroup: ""
+          EOF
+          
+              echo "Create a new Role for the '${{ needs.var.outputs.ns }}-vault-sa' service account"
+              kubectl apply -f Role.yaml
+          
+              echo "Create a new Role for the '${{ needs.var.outputs.ns }}-vault-sa' service account"
+              kubectl apply -f RoleBinding.yaml
+          fi
+  
+      - name: Vault - Cluster Role Binding
+        run: |        
+          if [[ $(kubectl get clusterrolebinding | grep ${{ needs.var.outputs.ns }}-role-binding) ]]; then
+              echo "Clusterrolebinding '${{ needs.var.outputs.ns }}-role-binding' in the namespace '${{ needs.var.outputs.ns }}' already exists"
+          else
+              echo "Across the entire cluster, grant the permissions in the view ClusterRole to a service account"
+              kubectl create clusterrolebinding ${{ needs.var.outputs.ns }}-role-binding --clusterrole=system:auth-delegator --serviceaccount=${{ needs.var.outputs.ns }}:${{ needs.var.outputs.ns }}-vault-sa
+          fi
+  
+      - name: Vault - Unseal
+        run: |
+          
+          echo "Unseal vault"
+          kubectl -n ${{ secrets.WK_VAULT_NAMESPACE }} exec -it vault-0 -- vault operator unseal ${{ secrets.WK_VAULT_UNSEAL_KEY }}
+          
+      - name: Vault - Login to vault
+        run: |        
+          echo "Login to vault"
+          kubectl -n ${{ secrets.WK_VAULT_NAMESPACE }} exec -it vault-0 -- vault login ${{ secrets.WK_VAULT_ROOT_TOKEN }} 
+  
+      - name: Get Vault sa-name
+        id: vault-sa-name
+        run: echo ::set-output name=value::$(echo $(kubectl -n ${{ needs.var.outputs.ns }} get serviceaccount ${{ needs.var.outputs.ns }}-vault-sa -o jsonpath='{.secrets[0].name}'))
+  
+      - name: Validate Vault sa-name
+        run: |
+          echo "sa-name=${{ steps.vault-sa-name.outputs.value }}"
+  
+      - name: Get Vault sa-jwt-token
+        id: vault-sa-jwt-token
+        run: echo ::set-output name=value::$(echo $(kubectl -n ${{ needs.var.outputs.ns }} get secret ${{ steps.vault-sa-name.outputs.value }} -o jsonpath='{.data.token}' | base64 --decode))
+  
+      - name: Validate Vault jwt
+        run: |
+          echo "sa-jwt-token=${{ steps.vault-sa-jwt-token.outputs.value }}"
+  
+      - name: Vault - CERT
+        run: |      
+          echo "Get encoded CA cert used to talk to Kubernetes API"
+          SA_CA_CRT=$(kubectl -n ${{ needs.var.outputs.ns }} get secret ${{ steps.vault-sa-name.outputs.value }} -o jsonpath="{.data.ca\.crt}" | base64 --decode; echo)
+          echo "SA_CA_CRT = $SA_CA_CRT"
+          
+          echo "Get Kubernetes master server URL"
+          K8S_HOST=$(kubectl -n ${{ needs.var.outputs.ns }} config view --minify -o jsonpath='{.clusters[0].cluster.server}')
+          
+          echo "Configure the backend with the Kubernetes master server URL and certificate-authority-data"
+          kubectl -n ${{ secrets.WK_VAULT_NAMESPACE }} exec -it vault-0 -- vault write auth/kubernetes/config kubernetes_host="$K8S_HOST" kubernetes_ca_cert="$SA_CA_CRT" token_reviewer_jwt=${{ needs.var.outputs.vault-sa-jwt-token}}
+  
+      - name: Vault - Auth Token
+        run: |              
+          echo "Create a new role '${{ needs.var.outputs.ns }}'"
+          kubectl -n ${{ secrets.WK_VAULT_NAMESPACE }} exec -it vault-0 -- vault write auth/kubernetes/role/${{ needs.var.outputs.ns }} \
+          bound_service_account_names=${{ needs.var.outputs.ns }}-vault-sa \
+          bound_service_account_namespaces=${{ needs.var.outputs.ns }} \
+          policies=provisioner \
+          ttl=1h
+          
+          echo "Add '${{ needs.var.outputs.ns }}' role to the 'Kubernetes Auth' backend of the vault using the service account token"
+          kubectl -n ${{ secrets.WK_VAULT_NAMESPACE }} exec -it vault-0 -- vault write auth/kubernetes/login role=${{ needs.var.outputs.ns }} jwt=${{ steps.vault-sa-jwt-token.outputs.value }}
+          
+      - name: create vault entry if not exists
+        run: |         
+          echo "Should CREATE '${{ needs.var.outputs.short-name }}' entry for the service"
+        # echo "Create a new vault secret '${{ needs.var.outputs.short-name }}' with key 'ping' and value 'Ok'"
+        # kubectl -n ${{ secrets.WK_VAULT_NAMESPACE }} exec -it vault-0 -- vault kv put secret/${{ needs.var.outputs.short-name }} ping="Ok"
+        shell: bash
+
+# ----------------------  HELM ----------------------------
+  publish-to-eks:
+    needs: [var, prepare-publish-to-eks]
+    name: HELM Publish to EKS
+    runs-on: ubuntu-latest
+
+    steps:
+      - id: throw-on-failure  
+        if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+        uses: weknow-network/weknow-throw-on-failure@v8    
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+# ----------------------  SETUP + CREDENTIALS ----------------------------      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.EKS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.EKS_ACCESS_KEY_SECRET }}
+          aws-region: ${{ inputs.eks-region }}
+  
+      - name: Kubectl tool installer
+        uses: Azure/setup-kubectl@v1
+      
+      - id: install-aws-cli
+        uses: unfor19/install-aws-cli-action@v1
+        with:
+          version: 2.0.30
+          verbose: false
+          aws-access-key-id: ${{ secrets.EKS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.EKS_ACCESS_KEY_SECRET }}
+          aws-region: ${{ inputs.eks-region }}        
+          
+      - run: aws eks --region ${{ inputs.eks-region }} update-kubeconfig --name ${{ inputs.eks-cluster-name }} --alias ${{ inputs.eks-cluster-name }}
+        shell: bash
+  
+# ----------------------  HELM ----------------------------
+  
+      - name: Helm tool installer
+        uses: Azure/setup-helm@v1
+        with:
+          version: ${{ inputs.helm-version }}
+  
+      - name: docker registry secret
+        run: |  
+          if [[ $(kubectl get secrets -n=${{ needs.var.outputs.ns }} | grep ${{ inputs.pkg-secret-name }}) ]]; then
+            echo "Secret '${{ inputs.pkg-secret-name }}' already exists"
+          else
+            echo "Create a secret '${{ inputs.pkg-secret-name }}' (used within the HELM chart)"
+            kubectl create secret docker-registry ${{ inputs.pkg-secret-name }} \
+             --docker-server=https://ghcr.io \
+             --docker-username=${{ inputs.repo-owner }} \
+             --docker-password=${{ secrets.READ_PACKAGES_LOCAL }} \
+             -n=${{ needs.var.outputs.ns }} \
+             -o yaml
+          fi
+          
+      - id: get-version  # use it with ${{ steps.get-version.outputs.version }}
+        uses: weknow-network/get-dotnet-version-action@v2
+           
+      - name: HELM upgrade
+        run: |  
+          helm upgrade ${{ needs.var.outputs.short-name }} ${{ needs.var.outputs.chart-folder }} \
+            --install --wait --timeout 180s -n ${{ needs.var.outputs.ns }}  \
+            --set image.repository=ghcr.io/weknow-network/${{ needs.var.outputs.short-name }} \
+            --debug \
+            --set image.tag=${{ steps.get-version.outputs.version }} \
+            --set ingress.enabled=${{ inputs.ingress-enabled }} \
+            --set ingress.name=${{ needs.var.outputs.full-name }} \
+            --set vault.inject=${{ inputs.vault-inject-enabled }} \
+            --set vault.serviceAccount=${{ needs.var.outputs.ns }}-vault-sa \
+            --set vault.role=${{ needs.var.outputs.ns }} \
+            --set vault.secretName=${{ needs.var.outputs.short-name }} \
+            --set probes.enabled=${{ inputs.probs-enabled }}
+  
