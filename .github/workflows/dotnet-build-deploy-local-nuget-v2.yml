@@ -9,6 +9,10 @@ name: Build & Deploy NuGet
 on: 
   workflow_call:
     inputs:
+      nuget-update-token:
+        type: string
+        description: "Write token to the nuget registry."
+        required: true
       build-config:
         type: string
         description: "Build configuration like Release, Debug, etc."
@@ -22,10 +26,6 @@ on:
       include-prerelease:
         type: boolean
         description: "Indicate whether to include prerelease .NET version."
-        required: false
-        default: false
-      nuget-update-token:
-        type: string
         required: false
         default: false
 
@@ -76,7 +76,7 @@ jobs:
       - name: GitHub Package Registry Tool Install
         run: dotnet tool install --global --verbosity minimal --no-cache gpr
       - name: NuGet Push (repo = ${{ github.repository }}) 
-        run: gpr push --api-key ${{ secrets.nuget-registry-token }} --repository ${{ github.repository }} --retries 3 ./out/**/*.nupkg
+        run: gpr push --api-key ${{ inputs.nuget-update-token }} --repository ${{ github.repository }} --retries 3 ./out/**/*.nupkg
 
       # - name: ECHO
       #   run: echo "gpr push --api-key ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --repository ${{ github.repository }} --retries 3 ./out/**/*.nupkg"
