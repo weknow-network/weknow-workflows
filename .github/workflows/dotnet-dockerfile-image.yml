@@ -1,0 +1,70 @@
+name: Build & Deploy Docker Image
+
+# doc:               https://docs.github.com/en/actions
+# variables:         https://docs.github.com/en/actions/learn-github-actions/environment-variables
+# secrets:           https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#example-17
+# env:               https://docs.github.com/en/actions/learn-github-actions/environment-variables
+# reusable workflow: https://docs.github.com/en/actions/learn-github-actions/reusing-workflows#access-to-reusable-workflows
+
+on: 
+  workflow_call:
+    inputs:
+      organization:
+        type: string
+        description: "github organization / user of the repo"
+        required: true
+      repo-prefix-convention:
+        type: string
+        description: "expected prefix of the repo name"
+        required: true
+      repo-owner:
+        type: string
+        description: "the repo owner"
+        required: true
+
+    secrets:
+      UPLOAD_PACKAGE_LOCAL:
+        description: "Write token to the nuget registry."
+        required: true  
+
+env: # https://docs.github.com/en/actions/learn-github-actions/environment-variables
+  BASE_PATH: ghcr.io/${{ inputs.organization }}/
+
+jobs:
+  build-publish_nuget:
+    # if: ${{ github.event.workflow_run.conclusion != 'failure' }}
+    name: Build & Publish NuGet
+    runs-on: ubuntu-latest    
+    # if: github.ref == 'refs/heads/master' || github.event_name == 'release'   
+
+    steps:
+      - id: throw-on-failure  
+        if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+        uses: weknow-network/weknow-throw-on-failure@v8    
+
+      - uses: actions/checkout@v2
+     
+      - name: Short Name
+        id: short-name
+        run: echo ::set-output name=value::$(echo "$GITHUB_REPOSITORY" | perl -p -e 's/${{ inputs.organization }}\/${{ inputs.repo-prefix-convention }}(.*)/"$1"/eg')
+  
+      - name: Full Name
+        id: full-name
+        run: echo ::set-output name=value::${{ env.BASE_PATH }}${{ steps.short-name.outputs.value }}
+     
+      - id: get-version
+        uses: weknow-network/get-dotnet-version-action@v2
+        
+      - name: Get DockerFile path
+        id: dockerfile
+        run: echo ::set-output name=path::$(echo "$((find . -name "Dockerfile" -print &) | head -n 1)") # assuming single chart
+  
+      - name: Build the Docker image
+        run: docker build . --file ${{ steps.dockerfile.outputs.path }} --tag ${{ steps.full-name.outputs.value }}:${{ steps.get-version.outputs.version }}
+  
+      - name: Login to GitHub Package
+        run: docker login ghcr.io -u ${{ inputs.repo-owner }} -p ${{ secrets.UPLOAD_PACKAGE_LOCAL }} 
+  
+      - name: push to  GitHub Package
+        run: docker push ${{ steps.full-name.outputs.value }}:${{ steps.get-version.outputs.version }}
+  

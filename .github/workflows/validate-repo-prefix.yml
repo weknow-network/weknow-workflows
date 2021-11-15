@@ -49,17 +49,3 @@ jobs:
         with:
           script: |
               core.setFailed('Repo name [${{ github.repository }}] must start with [${{ needs.var.outputs.full-prefix }}]: ${{ startsWith(github.repository, needs.var.outputs.full-prefix) }}')
-
-  # on-failure:
-  #   # uses: weknow-network/weknow-workflows/.github/workflows/on-failure.yml@main
-  #   runs-on: ubuntu-latest
-  #   if: ${{ github.event.workflow_run.conclusion == 'failure' }}
-  #   steps:
-  #     - name: Cancel Message
-  #       run: echo 'Canceled - Dependencies failure'
-
-  #     - name: Throw
-  #       uses: actions/github-script@v5
-  #       with:
-  #         script: |
-  #             core.setFailed('Not runs, because of previous failure')

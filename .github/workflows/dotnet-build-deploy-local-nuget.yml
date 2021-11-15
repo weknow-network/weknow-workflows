@@ -9,10 +9,6 @@ name: Build & Deploy NuGet
 on: 
   workflow_call:
     inputs:
-      # nuget-update-token:
-      #   type: string
-      #   description: "Write token to the nuget registry."
-      #   required: true
       build-config:
         type: string
         description: "Build configuration like Release, Debug, etc."
@@ -36,18 +32,17 @@ on:
 
 jobs:
   build-publish_nuget:
-    # if: ${{ github.event.workflow_run.conclusion != 'failure' }}
     name: Build & Publish NuGet
     runs-on: ubuntu-latest    
     # if: github.ref == 'refs/heads/master' || github.event_name == 'release'   
 
     steps:
-      - uses: actions/checkout@v2
-   
       - id: throw-on-failure  
         if: ${{ github.event.workflow_run.conclusion == 'failure' }}
         uses: weknow-network/weknow-throw-on-failure@v8    
 
+      - uses: actions/checkout@v2
+   
       - name: Build Setup (.NET)
         uses: actions/setup-dotnet@v1
         with:
