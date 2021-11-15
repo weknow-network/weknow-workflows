@@ -10,26 +10,6 @@ on:
   workflow_call:
   
 jobs:
-  version_increment:
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
-    name: Increment Version
-    runs-on: ubuntu-latest    
-  
-    steps:
-      - uses: actions/checkout@v2
-  
-      - name: Increment Version
-        run: |
-          perl -pi -e 's/([0-9]+)\.([0-9]+)\.([0-9]+)/"$1.$2.${\( $3+1 )}"/eg' Directory.Build.props
-        shell: bash
-      - name: Commit changes
-        uses: EndBug/add-and-commit@v7
-        with:
-          author_name: CI/CD
-          author_email: ${{ inputs.author-email }}
-          message: "Increment Version"
-          add: "Directory.Build.props"
-  
   on-failure:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'failure' }}
