@@ -26,37 +26,31 @@ on:
         default: false
   
 jobs:
-  build:
+  build-publish_nuget:
     name: Build
     runs-on: ubuntu-latest    
     
     steps:
       - uses: actions/checkout@v2
 
-      - name: Setup .NET
+      - name: Build Setup (.NET)
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: ${{ inputs.dotnet-version }}
           include-prerelease: ${{ inputs.include-prerelease }}
   
-      - name: Restore dependencies
+      - name: .NET Restore dependencies
         run: dotnet restore /property:Configuration=${{ inputs.build-config }} 
         shell: bash
-      - name: Build
+      - name: .NET Build
         run: dotnet build  --configuration ${{ inputs.build-config }} --no-restore -o out
         shell: bash
-      - name: Test
+      - name: .NET Test
         run: dotnet test --filter Category=CI --configuration ${{ inputs.build-config }} --no-restore --no-build --verbosity normal -o out
         shell: bash
 
-  publish_nuget:
-    needs: build
-    name: Publish NuGet (local registry)
-    runs-on: ubuntu-latest    
-
-    steps:
       - name: GitHub Package Registry Tool Install
         run: dotnet tool install --global --verbosity minimal --no-cache gpr
-      - name: NuGet Push with GPR
+      - name: NuGet Push (local)
         run: gpr push --api-key ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --repository ${{ github.repository }} --retries 3 **/*.nupkg
   
