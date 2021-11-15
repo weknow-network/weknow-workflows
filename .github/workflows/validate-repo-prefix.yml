@@ -18,15 +18,30 @@ on:
         description: "expected prefix of the repo name"
         required: true
 
+
 jobs:
+  var:
+    name: Set variables
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+
+    steps:
+    - name: Full prefix
+      id: full-prefix
+      run: echo ::set-output name=value::$(echo ${{ inputs.organization }}/${{ inputs.repo-prefix }})
+
+    outputs:
+      full-prefix: ${{ steps.full-prefix.outputs.value }}
+
   validate-repo-prefix:
-    name: Increment Version
+    needs: var
+    name: Validate repo name
     runs-on: ubuntu-latest    
     
     steps:
       - name: Validate repo name
-        if: ${{ !startsWith(github.repository, '${{ inputs.organization }}/${{ inputs.repo-prefix }}') }}
+        if: ${{ !startsWith(github.repository, needs.var.outputs.full-prefix ) }}
         uses: actions/github-script@v3
         with:
           script: |
-              core.setFailed('Repo name [${{ github.repository }}] must start with [${{ inputs.organization }}/${{ inputs.repo-prefix }}]: ${{ startsWith(github.repository, '${{ inputs.repo-prefix }}') }}')
+              core.setFailed('Repo name [${{ github.repository }}] must start with [${{ needs.var.outputs.full-prefix }}]: ${{ startsWith(github.repository, needs.var.outputs.full-prefix) }}')
