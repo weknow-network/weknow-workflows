@@ -62,7 +62,7 @@ jobs:
       - name: Build the Docker image
         run: docker build . --file ${{ steps.dockerfile.outputs.path }} --tag ${{ steps.full-name.outputs.value }}:${{ steps.get-version.outputs.version }}
   
-      - name: Login to GitHub Package
+      - name: Login to GitHub Package (${{ inputs.repo-owner }})
         run: docker login ghcr.io -u ${{ inputs.repo-owner }} -p ${{ secrets.UPLOAD_PACKAGE_LOCAL }} 
   
       - name: push to  GitHub Package
