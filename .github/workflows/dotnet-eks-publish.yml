@@ -74,6 +74,9 @@ on:
       WK_VAULT_ROOT_TOKEN:
         description: "vault root token."
         required: true  
+      READ_PACKAGES_LOCAL:
+        description: "docker registry read permission."
+        required: true  
 
 jobs:
   var:
