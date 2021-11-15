@@ -24,8 +24,13 @@ on:
         description: "Indicate whether to include prerelease .NET version."
         required: false
         default: false
+      y:
+        type: string
+        required: false
+        default: false
+
     secrets:
-      nuget-registry-token:
+      x:
         description: "Write token to the nuget registry."
         required: true  
 
