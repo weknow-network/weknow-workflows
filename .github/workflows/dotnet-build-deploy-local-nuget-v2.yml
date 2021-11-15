@@ -24,15 +24,15 @@ on:
         description: "Indicate whether to include prerelease .NET version."
         required: false
         default: false
-      y:
+      nuget-update-token:
         type: string
         required: false
         default: false
 
-    secrets:
-      x:
-        description: "Write token to the nuget registry."
-        required: true  
+    # secrets:
+    #   nuget-update-token:
+    #     description: "Write token to the nuget registry."
+    #     required: true  
 
 jobs:
   build-publish_nuget:
