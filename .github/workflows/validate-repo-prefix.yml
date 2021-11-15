@@ -44,7 +44,7 @@ jobs:
 
       - name: Validate repo name
         if: ${{ !startsWith(github.repository, needs.var.outputs.full-prefix ) }}
-        uses: actions/github-script@v3
+        uses: actions/github-script@v5
         with:
           script: |
               core.setFailed('Repo name [${{ github.repository }}] must start with [${{ needs.var.outputs.full-prefix }}]: ${{ startsWith(github.repository, needs.var.outputs.full-prefix) }}')
@@ -58,7 +58,7 @@ jobs:
   #       run: echo 'Canceled - Dependencies failure'
 
   #     - name: Throw
-  #       uses: actions/github-script@v3
+  #       uses: actions/github-script@v5
   #       with:
   #         script: |
   #             core.setFailed('Not runs, because of previous failure')

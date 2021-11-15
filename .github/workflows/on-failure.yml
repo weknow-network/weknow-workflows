@@ -18,7 +18,7 @@ jobs:
         run: echo 'Canceled - Dependencies failure'
 
       - name: Throw
-        uses: actions/github-script@v3
+        uses: actions/github-script@v5
         with:
           script: |
               core.setFailed('Not runs, because of previous failure')
