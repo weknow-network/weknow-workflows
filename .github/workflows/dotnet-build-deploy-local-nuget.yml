@@ -29,7 +29,8 @@ jobs:
   build-publish_nuget:
     name: Build
     runs-on: ubuntu-latest    
-    
+    # if: github.ref == 'refs/heads/master' || github.event_name == 'release'   
+
     steps:
       - uses: actions/checkout@v2
 
@@ -51,6 +52,6 @@ jobs:
 
       - name: GitHub Package Registry Tool Install
         run: dotnet tool install --global --verbosity minimal --no-cache gpr
-      - name: NuGet Push (local)
+      - name: NuGet Push (repo = ${{ github.repository }}) 
         run: gpr push --api-key ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --repository ${{ github.repository }} --retries 3 **/*.nupkg
   
