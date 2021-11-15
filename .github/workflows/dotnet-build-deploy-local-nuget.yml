@@ -24,15 +24,23 @@ on:
         description: "Indicate whether to include prerelease .NET version."
         required: false
         default: false
-  
+    secrets:
+      nuget-registry-token:
+        description: "Write token to the nuget registry."
+        required: true  
+
 jobs:
   build-publish_nuget:
-    if: ${{ github.event.workflow_run.conclusion != 'failure' }}
+    # if: ${{ github.event.workflow_run.conclusion != 'failure' }}
     name: Build
     runs-on: ubuntu-latest    
     # if: github.ref == 'refs/heads/master' || github.event_name == 'release'   
 
     steps:
+    
+      - id: throw-on-failure
+        uses: weknow-network/weknow-throw-on-failure@v1     
+
       - uses: actions/checkout@v2
 
       - name: Build Setup (.NET)
@@ -60,24 +68,25 @@ jobs:
       #     dotnet nuget add source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json --name github-ci --username ${{ github.repository_owner }} --password ${{ github.token }} --store-password-in-clear-text
       #     dotnet nuget push ./out/**/*.nupkg --source github-ci --skip-duplicate --no-symbols false
           
-      # - name: GitHub Package Registry Tool Install
-      #   run: dotnet tool install --global --verbosity minimal --no-cache gpr
-      # - name: NuGet Push (repo = ${{ github.repository }}) 
-      #   run: gpr push --api-key ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --repository ${{ github.repository }} --retries 3 ./out/**/*.nupkg
-      - name: ECHO
-        run: echo "gpr push --api-key ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --repository ${{ github.repository }} --retries 3 ./out/**/*.nupkg"
-        shell: bash
-  
-  on-failure:
-    # uses: weknow-network/weknow-workflows/.github/workflows/on-failure.yml@main
-    runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
-    steps:
-      - name: Cancel Message
-        run: echo 'Canceled - Dependencies failure'
+      - name: GitHub Package Registry Tool Install
+        run: dotnet tool install --global --verbosity minimal --no-cache gpr
+      - name: NuGet Push (repo = ${{ github.repository }}) 
+        run: gpr push --api-key ${{ secrets.nuget-registry-token }} --repository ${{ github.repository }} --retries 3 ./out/**/*.nupkg
 
-      - name: Throw
-        uses: actions/github-script@v3
-        with:
-          script: |
-              core.setFailed('Not runs, because of previous failure')
+      # - name: ECHO
+      #   run: echo "gpr push --api-key ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --repository ${{ github.repository }} --retries 3 ./out/**/*.nupkg"
+      #   shell: bash
+  
+  # on-failure:
+  #   # uses: weknow-network/weknow-workflows/.github/workflows/on-failure.yml@main
+  #   runs-on: ubuntu-latest
+  #   if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+  #   steps:
+  #     - name: Cancel Message
+  #       run: echo 'Canceled - Dependencies failure'
+
+  #     - name: Throw
+  #       uses: actions/github-script@v3
+  #       with:
+  #         script: |
+  #             core.setFailed('Not runs, because of previous failure')

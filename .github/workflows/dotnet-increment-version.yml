@@ -11,11 +11,15 @@ on:
   
 jobs:
   version_increment:
-    if: ${{ github.event.workflow_run.conclusion != 'failure' }}
+    # if: ${{ github.event.workflow_run.conclusion != 'failure' }}
     name: Increment Version
     runs-on: ubuntu-latest    
   
     steps:
+    
+      - id: throw-on-failure
+        uses: weknow-network/weknow-throw-on-failure@v1  
+
       - uses: actions/checkout@v2
   
       - name: Increment Version
@@ -30,16 +34,9 @@ jobs:
           message: "Increment Version"
           add: "Directory.Build.props"
   
-  on-failure:
-    # uses: weknow-network/weknow-workflows/.github/workflows/on-failure.yml@main
-    runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
-    steps:
-      - name: Cancel Message
-        run: echo 'Canceled - Dependencies failure'
-
-      - name: Throw
-        uses: actions/github-script@v3
-        with:
-          script: |
-              core.setFailed('Not runs, because of previous failure')
+  # on-failure:
+  #   # uses: weknow-network/weknow-workflows/.github/workflows/on-failure.yml@main
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - id: throw-on-failure
+  #       uses: weknow-network/weknow-throw-on-failure@v1     
