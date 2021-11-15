@@ -24,11 +24,10 @@ on:
         description: "Indicate whether to include prerelease .NET version."
         required: false
         default: false
+    secrets:
       nuget-registry-token:
-        type: string
         description: "Write token to the nuget registry."
         required: true  
-    # secrets:
 
 jobs:
   build-publish_nuget:
