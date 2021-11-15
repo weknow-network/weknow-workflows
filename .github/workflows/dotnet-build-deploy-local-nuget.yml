@@ -51,10 +51,6 @@ jobs:
         run: dotnet test --filter Category=CI --configuration ${{ inputs.build-config }} --no-restore --no-build --verbosity normal -o out
         shell: bash
 
-      - name: ls
-        run: echo $(ls)
-        shell: bash
-
       # - name: NuGet push 
       #   run: |
       #     dotnet nuget push ./out/**/*.nupkg --source github -k ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --skip-duplicate
@@ -64,11 +60,13 @@ jobs:
       #     dotnet nuget add source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json --name github-ci --username ${{ github.repository_owner }} --password ${{ github.token }} --store-password-in-clear-text
       #     dotnet nuget push ./out/**/*.nupkg --source github-ci --skip-duplicate --no-symbols false
           
-      - name: GitHub Package Registry Tool Install
-        run: dotnet tool install --global --verbosity minimal --no-cache gpr
-      - name: NuGet Push (repo = ${{ github.repository }}) 
-        run: gpr push --api-key ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --retries 3 ./out/**/*.nupkg
-        # run: gpr push --api-key ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --repository ${{ github.repository }} --retries 3 ./out/**/*.nupkg
+      # - name: GitHub Package Registry Tool Install
+      #   run: dotnet tool install --global --verbosity minimal --no-cache gpr
+      # - name: NuGet Push (repo = ${{ github.repository }}) 
+      #   run: gpr push --api-key ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --repository ${{ github.repository }} --retries 3 ./out/**/*.nupkg
+      - name: ECHO
+        run: echo "gpr push --api-key ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --repository ${{ github.repository }} --retries 3 ./out/**/*.nupkg"
+        shell: bash
   
   on-failure:
     # uses: weknow-network/weknow-workflows/.github/workflows/on-failure.yml@main
