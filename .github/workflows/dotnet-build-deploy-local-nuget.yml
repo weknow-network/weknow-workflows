@@ -9,10 +9,10 @@ name: Build & Deploy NuGet
 on: 
   workflow_call:
     inputs:
-      nuget-update-token:
-        type: string
-        description: "Write token to the nuget registry."
-        required: true
+      # nuget-update-token:
+      #   type: string
+      #   description: "Write token to the nuget registry."
+      #   required: true
       build-config:
         type: string
         description: "Build configuration like Release, Debug, etc."
@@ -29,10 +29,10 @@ on:
         required: false
         default: false
 
-    # secrets:
-    #   nuget-update-token:
-    #     description: "Write token to the nuget registry."
-    #     required: true  
+    secrets:
+      UPLOAD_PACKAGE_LOCAL:
+        description: "Write token to the nuget registry."
+        required: true  
 
 jobs:
   build-publish_nuget:
