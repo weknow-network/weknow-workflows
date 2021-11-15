@@ -16,11 +16,10 @@ jobs:
     runs-on: ubuntu-latest    
   
     steps:
+      - uses: actions/checkout@v2
     
       - id: throw-on-failure
         uses: weknow-network/weknow-throw-on-failure@v3  
-
-      - uses: actions/checkout@v2
   
       - name: Increment Version
         run: |
