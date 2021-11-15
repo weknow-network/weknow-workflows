@@ -33,6 +33,7 @@ jobs:
           author_email: ${{ inputs.author-email }}
           message: "Increment Version"
           add: "Directory.Build.props"
+          push: true
   
   # on-failure:
   #   # uses: weknow-network/weknow-workflows/.github/workflows/on-failure.yml@main
