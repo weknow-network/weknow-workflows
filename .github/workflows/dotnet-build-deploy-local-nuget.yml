@@ -70,4 +70,15 @@ jobs:
         run: gpr push --api-key ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --repository ${{ github.repository }} --retries 3 ./out/**/*.nupkg
   
   on-failure:
-    uses: weknow-network/weknow-workflows/.github/workflows/on-failure.yml@main
+    # uses: weknow-network/weknow-workflows/.github/workflows/on-failure.yml@main
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    steps:
+      - name: Cancel Message
+        run: echo 'Canceled - Dependencies failure'
+
+      - name: Throw
+        uses: actions/github-script@v3
+        with:
+          script: |
+              core.setFailed('Not runs, because of previous failure')
