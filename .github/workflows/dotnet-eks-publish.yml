@@ -53,7 +53,7 @@ on:
         type: string
         description: "the repo owner"
         required: true
-      pkg-secret-name:
+      docker-registry-secret:
         type: string
         description: "the name of github package secret (which allow to fetch the image)"
         required: true
@@ -328,11 +328,11 @@ jobs:
   
       - name: docker registry secret
         run: |  
-          if [[ $(kubectl get secrets -n=${{ needs.var.outputs.ns }} | grep ${{ inputs.pkg-secret-name }}) ]]; then
-            echo "Secret '${{ inputs.pkg-secret-name }}' already exists"
+          if [[ $(kubectl get secrets -n=${{ needs.var.outputs.ns }} | grep ${{ inputs.docker-registry-secret }}) ]]; then
+            echo "Secret '${{ inputs.docker-registry-secret }}' already exists"
           else
-            echo "Create a secret '${{ inputs.pkg-secret-name }}' (used within the HELM chart)"
-            kubectl create secret docker-registry ${{ inputs.pkg-secret-name }} \
+            echo "Create a secret '${{ inputs.docker-registry-secret }}' (used within the HELM chart)"
+            kubectl create secret docker-registry ${{ inputs.docker-registry-secret }} \
              --docker-server=https://ghcr.io \
              --docker-username=${{ inputs.repo-owner }} \
              --docker-password=${{ secrets.READ_PACKAGES_LOCAL }} \
