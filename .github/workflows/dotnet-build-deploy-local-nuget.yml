@@ -49,11 +49,14 @@ jobs:
           dotnet-version: ${{ inputs.dotnet-version }}
           include-prerelease: ${{ inputs.include-prerelease }}
   
+      - id: get-version
+        uses: weknow-network/get-dotnet-version-action@v2
+
       - name: .NET Restore dependencies
         run: dotnet restore /property:Configuration=${{ inputs.build-config }} 
         shell: bash
-      - name: .NET Build
-        run: dotnet build  --configuration ${{ inputs.build-config }} --no-restore -o out
+      - name: .NET Build (${{ steps.get-version.outputs.version }})
+        run: dotnet build  --configuration ${{ inputs.build-config }} --no-restore -o out -p:Version=${{ steps.get-version.outputs.version }}
         shell: bash
       - name: .NET Test
         run: dotnet test --filter Category=CI --configuration ${{ inputs.build-config }} --no-restore --no-build --verbosity normal -o out
