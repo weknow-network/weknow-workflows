@@ -55,8 +55,9 @@ jobs:
       - name: .NET Restore dependencies
         run: dotnet restore /property:Configuration=${{ inputs.build-config }} 
         shell: bash
-      - name: .NET Build (${{ steps.get-version.outputs.version }})
-        run: dotnet build  --configuration ${{ inputs.build-config }} --no-restore -o out -p:Version=${{ steps.get-version.outputs.version }}
+      - name: .NET Build 
+        run: dotnet build  --configuration ${{ inputs.build-config }} --no-restore -o out 
+        # run: dotnet build  --configuration ${{ inputs.build-config }} --no-restore -o out -p:Version=${{ steps.get-version.outputs.version }}
         shell: bash
       - name: .NET Test
         run: dotnet test --filter Category=CI --configuration ${{ inputs.build-config }} --no-restore --no-build --verbosity normal -o out
