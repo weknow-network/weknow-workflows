@@ -1,0 +1,64 @@
+name: Build & Deploy NuGet
+
+# doc:               https://docs.github.com/en/actions
+# variables:         https://docs.github.com/en/actions/learn-github-actions/environment-variables
+# secrets:           https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#example-17
+# env:               https://docs.github.com/en/actions/learn-github-actions/environment-variables
+# reusable workflow: https://docs.github.com/en/actions/learn-github-actions/reusing-workflows#access-to-reusable-workflows
+
+on: 
+  workflow_call:
+    inputs:
+      build-config:
+        type: string
+        description: "Build configuration like Release, Debug, etc."
+        required: false
+        default: "Release"
+      dotnet-version:
+        type: string
+        description: "The .NET version."
+        required: false
+        default: "6.0.x"
+      include-prerelease:
+        type: boolean
+        description: "Indicate whether to include prerelease .NET version."
+        required: false
+        default: false
+
+    secrets:
+      NUGET_PUBLISH:
+        description: "Write token to the nuget registry."
+        required: true  
+
+jobs:
+  build-publish_nuget:
+    name: Build & Publish NuGet (public)
+    runs-on: ubuntu-latest    
+    # if: github.ref == 'refs/heads/master' || github.event_name == 'release'   
+
+    steps:
+      - id: throw-on-failure  
+        if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+        uses: weknow-network/weknow-throw-on-failure@v8    
+
+      - uses: actions/checkout@v2
+   
+      - name: Build Setup (.NET)
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: ${{ inputs.dotnet-version }}
+          include-prerelease: ${{ inputs.include-prerelease }}
+  
+      - name: .NET Restore dependencies
+        run: dotnet restore /property:Configuration=${{ inputs.build-config }} 
+        shell: bash
+      - name: .NET Build 
+        run: dotnet build  --configuration ${{ inputs.build-config }} --no-restore -o out 
+        # run: dotnet build  --configuration ${{ inputs.build-config }} --no-restore -o out -p:Version=${{ steps.get-version.outputs.version }}
+        shell: bash
+      - name: .NET Test
+        run: dotnet test --filter Category=CI --configuration ${{ inputs.build-config }} --no-restore --no-build --verbosity normal -o out
+        shell: bash
+          
+      - name: Push generated package
+        run: dotnet nuget push ./**/out/*.nupkg -k ${{ secrets.NUGET_PUBLISH }} -s https://api.nuget.org/v3/index.json --skip-duplicate 

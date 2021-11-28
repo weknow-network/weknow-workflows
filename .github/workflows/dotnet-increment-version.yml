@@ -34,11 +34,4 @@ jobs:
           message: "Increment Version"
           add: "Directory.Build.props"
           push: true
-  
-  # on-failure:
-  #   # uses: weknow-network/weknow-workflows/.github/workflows/on-failure.yml@main
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - id: throw-on-failure
-  #      if: ${{ github.event.workflow_run.conclusion == 'failure' }}
-  #      uses: weknow-network/weknow-throw-on-failure@v8    
+    
