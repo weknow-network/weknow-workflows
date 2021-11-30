@@ -67,7 +67,9 @@ jobs:
         run: dotnet tool install --global --verbosity minimal --no-cache gpr
       - name: NuGet Push (repo = ${{ github.repository }}) 
         run: |
-          dotnet nuget push ./**/out/*.nupkg -k ${{ secrets.UPLOAD_PACKAGE_LOCAL }} -s https://api.nuget.org/v3/index.json --skip-duplicate 
-        # gpr push --api-key ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --repository ${{ github.repository }} --retries 3 ./out/**/*.nupkg  || true
-        # gpr push --api-key ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --repository ${{ github.repository }} --retries 3 ./out/**/*.snupkg || true
+          gpr push --api-key ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --repository ${{ github.repository }} --retries 3 ./out/**/*.nupkg  || true
+          gpr push --api-key ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --repository ${{ github.repository }} --retries 3 ./out/**/*.snupkg || true
+        # dotnet nuget add source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json --name github-ci --username ${{ github.repository_owner }} --password ${{ github.token }} --store-password-in-clear-text
+        # dotnet nuget push ./out/**/*.nupkg --source github-ci --skip-duplicate --no-symbols false
+        # dotnet nuget push ./**/out/*.nupkg -k ${{ secrets.UPLOAD_PACKAGE_LOCAL }} -s https://api.nuget.org/v3/index.json --skip-duplicate 
 
