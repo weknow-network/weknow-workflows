@@ -67,7 +67,7 @@ jobs:
         run: dotnet tool install --global --verbosity minimal --no-cache gpr
       - name: NuGet Push (repo = ${{ github.repository }}) 
         run: |
-          gpr push --api-key ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --repository ${{ github.repository }} --retries 3 ./out/**/*.nupkg  || true
-          gpr push --api-key ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --repository ${{ github.repository }} --retries 3 ./out/**/*.snupkg || true
-        # run: gpr push --api-key ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --repository ${{ github.repository }} --retries 3 ./out/**/**
+          dotnet nuget push ./**/out/*.nupkg -k ${{ secrets.UPLOAD_PACKAGE_LOCAL }} -s https://api.nuget.org/v3/index.json --skip-duplicate 
+        # gpr push --api-key ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --repository ${{ github.repository }} --retries 3 ./out/**/*.nupkg  || true
+        # gpr push --api-key ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --repository ${{ github.repository }} --retries 3 ./out/**/*.snupkg || true
 
