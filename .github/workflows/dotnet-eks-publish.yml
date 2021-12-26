@@ -104,7 +104,7 @@ jobs:
   
       - name: Short Name
         id: short-name
-        run: echo ::set-output name=value::$(echo "$GITHUB_REPOSITORY" | perl -p -e 's/weknow-network\/wk-net-svc-(.*)/"$1"/eg' | sed 's/\./-/g' | sed 's/.*/\L&/')
+        run: echo ::set-output name=value::$(echo "$GITHUB_REPOSITORY" | perl -p -e 's/weknow-network\/wk-net-svc-(.*)/"$1"/eg' | tr '.' '-' | tr '[:upper:]' '[:lower:]')
         shell: bash
   
       - name: Full Name
@@ -121,7 +121,7 @@ jobs:
           if [ -z "${{ inputs.project }}" ]; then
             echo ::set-output name=value::$(echo "${{ steps.short-name.outputs.value }}") # assuming single chart
           else
-            echo ::set-output name=value::$(echo "${{ inputs.project }} | sed 's/\./-/g' | sed 's/.*/\L&/'")
+            echo ::set-output name=value::$(echo "${{ inputs.project }} | tr '.' '-' | tr '[:upper:]' '[:lower:]'")
           fi
         shell: bash
   

@@ -56,9 +56,9 @@ jobs:
         id: image
         run: |
           if [ -z "${{ inputs.project }}" ]; then
-            echo ::set-output name=value::$(echo "${{ steps.short-image-name.outputs.value }} | sed 's/\./-/g' | sed 's/.*/\L&/'") # assuming single chart
+            echo ::set-output name=value::$(echo "${{ steps.short-image-name.outputs.value }}" | tr '.' '-' | tr '[:upper:]' '[:lower:]') # assuming single chart
           else
-            echo ::set-output name=value::$(echo "${{ inputs.project }} | sed 's/\./-/g' | sed 's/.*/\L&/'")
+            echo ::set-output name=value::$(echo "${{ inputs.project }}" | tr '.' '-' | tr '[:upper:]' '[:lower:]')
           fi
         shell: bash
 
