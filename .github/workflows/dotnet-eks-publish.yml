@@ -9,6 +9,10 @@ name: Publish to EKS
 on: 
   workflow_call:
     inputs:
+      organization:
+        type: string
+        description: "github organization / user of the repo"
+        required: true
       ns-version:
         type: number
         description: "version of the namespace"
@@ -82,6 +86,9 @@ on:
         description: "docker registry read permission."
         required: true  
 
+env: # https://docs.github.com/en/actions/learn-github-actions/environment-variables
+  IMAGE_BASE_PATH: ghcr.io/${{ inputs.organization }}/
+
 jobs:
   var:
     name: Set variables
@@ -97,7 +104,7 @@ jobs:
   
       - name: Short Name
         id: short-name
-        run: echo ::set-output name=value::$(echo "$GITHUB_REPOSITORY" | perl -p -e 's/weknow-network\/wk-net-svc-(.*)/"$1"/eg')
+        run: echo ::set-output name=value::$(echo "$GITHUB_REPOSITORY" | perl -p -e 's/weknow-network\/wk-net-svc-(.*)/"$1"/eg' | sed 's/\./-/g' | sed 's/.*/\L&/')
   
       - name: Full Name
         id: full-name
@@ -113,7 +120,7 @@ jobs:
           if [ -z "${{ inputs.project }}" ]; then
             echo ::set-output name=value::$(echo "${{ steps.short-name.outputs.value }}") # assuming single chart
           else
-            echo ::set-output name=value::$(echo "${{ inputs.project }}")
+            echo ::set-output name=value::$(echo "${{ inputs.project }} | sed 's/\./-/g' | sed 's/.*/\L&/'")
           fi
   
       - name: Chart File
@@ -368,10 +375,11 @@ jobs:
            
       - name: HELM upgrade
         run: |  
-          helm upgrade ${{ needs.var.outputs.short-name }} ${{ needs.var.outputs.chart-folder }} \
+          helm upgrade ${{ needs.var.outputs.image }} ${{ needs.var.outputs.chart-folder }} \
             --install --wait --timeout 180s -n ${{ needs.var.outputs.ns }}  \
             --debug \
-            --set image.repository=ghcr.io/weknow-network/${{ needs.var.outputs.image }} \
+            --set fullnameOverride=${{ needs.var.outputs.image }}
+            --set image.repository=${{ env.IMAGE_BASE_PATH }}${{ needs.var.outputs.image }} \
             --set image.tag=${{ steps.get-version.outputs.version }} \
             --set ingress.enabled=${{ inputs.ingress-enabled }} \
             --set ingress.name=${{ needs.var.outputs.full-name }} \
