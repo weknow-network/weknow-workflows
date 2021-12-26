@@ -140,7 +140,7 @@ jobs:
 
       - name: Chart Folder
         id: vault-sa
-        run: echo ::set-output name=value::$(echo "${{ steps.ns.outputs.value }}-vault-sa")
+        run: echo ::set-output name=value::$(echo "${{ steps.ns.outputs.value }}-vault-sa" | tr '[:upper:]' '[:lower:]' )
 
     outputs:
       short-name: ${{ steps.short-name.outputs.value }}
