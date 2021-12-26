@@ -138,6 +138,10 @@ jobs:
         id: chart-folder
         run: echo ::set-output name=value::$(echo "$(dirname ${{ steps.chart-file.outputs.value }})")
 
+      - name: Chart Folder
+        id: vault-sa
+        run: echo ::set-output name=value::$(echo "${{ steps.ns.outputs.value }}-vault-sa")
+
     outputs:
       short-name: ${{ steps.short-name.outputs.value }}
       full-name: ${{ steps.full-name.outputs.value }}
@@ -204,18 +208,18 @@ jobs:
 # ----------------------  VAULT ----------------------------
       - name: Vault - Create Service Account
         run: |
-          if [[ $(kubectl -n ${{ needs.var.outputs.ns }} get sa | grep -E '(^|\s)${{ needs.var.outputs.ns }}-vault-sa($|\s)') ]]; then
-              echo "Service account '${{ needs.var.outputs.ns }}-vault-sa' in the namespace '${{ needs.var.outputs.ns }}' already exists"
+          if [[ $(kubectl -n ${{ needs.var.outputs.ns }} get sa | grep -E '(^|\s)${{ needs.var.outputs.vault-sa }}($|\s)') ]]; then
+              echo "Service account '${{ needs.var.outputs.vault-sa }}' in the namespace '${{ needs.var.outputs.ns }}' already exists"
           else
-              echo "Create a new vault service account '${{ needs.var.outputs.ns }}-vault-sa' in the namespace '${{ needs.var.outputs.ns }}', if not exists"
-              kubectl -n ${{ needs.var.outputs.ns }} create sa ${{ needs.var.outputs.ns }}-vault-sa
+              echo "Create a new vault service account '${{ needs.var.outputs.vault-sa }}' in the namespace '${{ needs.var.outputs.ns }}', if not exists"
+              kubectl -n ${{ needs.var.outputs.ns }} create sa ${{ needs.var.outputs.vault-sa }}
           
               echo "Create a new yaml file 'Role.yaml'"
           cat > Role.yaml <<EOF 
           kind: Role
           apiVersion: rbac.authorization.k8s.io/v1
           metadata:  
-            name: ${{ needs.var.outputs.ns }}-vault-sa-role
+            name: ${{ needs.var.outputs.vault-sa }}-role
             namespace: ${{ needs.var.outputs.ns }}
           rules:
           - apiGroups: ["", "extensions", "apps"]
@@ -227,23 +231,23 @@ jobs:
           kind: RoleBinding
           apiVersion: rbac.authorization.k8s.io/v1
           metadata: 
-            name: ${{ needs.var.outputs.ns }}-vault-sa-role-binding
+            name: ${{ needs.var.outputs.vault-sa }}-role-binding
             namespace: ${{ needs.var.outputs.ns }}
           subjects: 
           - kind: ServiceAccount 
-            name: ${{ needs.var.outputs.ns }}-vault-sa
+            name: ${{ needs.var.outputs.vault-sa }}
             namespace: ${{ needs.var.outputs.ns }}
             apiGroup: ""
           roleRef: 
             kind: Role
-            name: ${{ needs.var.outputs.ns }}-vault-sa-role
+            name: ${{ needs.var.outputs.vault-sa }}-role
             apiGroup: ""
           EOF
           
-              echo "Create a new Role for the '${{ needs.var.outputs.ns }}-vault-sa' service account"
+              echo "Create a new Role for the '${{ needs.var.outputs.vault-sa }}' service account"
               kubectl apply -f Role.yaml
           
-              echo "Create a new Role for the '${{ needs.var.outputs.ns }}-vault-sa' service account"
+              echo "Create a new Role for the '${{ needs.var.outputs.vault-sa }}' service account"
               kubectl apply -f RoleBinding.yaml
           fi
   
@@ -253,7 +257,7 @@ jobs:
               echo "Clusterrolebinding '${{ needs.var.outputs.ns }}-role-binding' in the namespace '${{ needs.var.outputs.ns }}' already exists"
           else
               echo "Across the entire cluster, grant the permissions in the view ClusterRole to a service account"
-              kubectl create clusterrolebinding ${{ needs.var.outputs.ns }}-role-binding --clusterrole=system:auth-delegator --serviceaccount=${{ needs.var.outputs.ns }}:${{ needs.var.outputs.ns }}-vault-sa
+              kubectl create clusterrolebinding ${{ needs.var.outputs.ns }}-role-binding --clusterrole=system:auth-delegator --serviceaccount=${{ needs.var.outputs.ns }}:${{ needs.var.outputs.vault-sa }}
           fi
   
       - name: Vault - Unseal
@@ -269,7 +273,7 @@ jobs:
   
       - name: Get Vault sa-name
         id: vault-sa-name
-        run: echo ::set-output name=value::$(echo $(kubectl -n ${{ needs.var.outputs.ns }} get serviceaccount ${{ needs.var.outputs.ns }}-vault-sa -o jsonpath='{.secrets[0].name}'))
+        run: echo ::set-output name=value::$(echo $(kubectl -n ${{ needs.var.outputs.ns }} get serviceaccount ${{ needs.var.outputs.vault-sa }} -o jsonpath='{.secrets[0].name}'))
   
       - name: Validate Vault sa-name
         run: |
@@ -299,7 +303,7 @@ jobs:
         run: |              
           echo "Create a new role '${{ needs.var.outputs.ns }}'"
           kubectl -n ${{ secrets.WK_VAULT_NAMESPACE }} exec -it vault-0 -- vault write auth/kubernetes/role/${{ needs.var.outputs.ns }} \
-          bound_service_account_names=${{ needs.var.outputs.ns }}-vault-sa \
+          bound_service_account_names=${{ needs.var.outputs.vault-sa }} \
           bound_service_account_namespaces=${{ needs.var.outputs.ns }} \
           policies=provisioner \
           ttl=1h
@@ -386,7 +390,7 @@ jobs:
             --set ingress.enabled=${{ inputs.ingress-enabled }} \
             --set ingress.name=${{ needs.var.outputs.full-name }} \
             --set vault.inject=${{ inputs.vault-inject-enabled }} \
-            --set vault.serviceAccount=${{ needs.var.outputs.ns }}-vault-sa \
+            --set vault.serviceAccount=${{ needs.var.outputs.vault-sa }} \
             --set vault.role=${{ needs.var.outputs.ns }} \
             --set vault.secretName=${{ needs.var.outputs.short-name }} \
             --set probes.enabled=${{ inputs.probs-enabled }}
