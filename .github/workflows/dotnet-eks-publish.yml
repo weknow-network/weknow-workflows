@@ -49,6 +49,11 @@ on:
         description: "the HELM version"
         required: false
         default: 3.7.1
+      helm-chart-path:
+        type: string
+        description: "the HELM chart's path"
+        required: false
+        # default: ./?.APIs/charts/Chart.yaml
       repo-owner:
         type: string
         description: "the repo owner"
@@ -105,7 +110,13 @@ jobs:
   
       - name: Chart File
         id: chart-file
-        run: echo ::set-output name=value::$(echo "$((find . -name "Chart.yaml" -print &) | head -n 1)") # assuming single chart
+        run: |
+          if [ -z "${{ inputs.helm-chart-path }}" ]; then
+            echo ::set-output name=value::$(echo "$((find . -name "Chart.yaml" -print &) | head -n 1)") # assuming single chart
+          else
+            echo ::set-output name=value::$(echo "${{ inputs.helm-chart-path }}")
+          fi
+
       - name: Chart Folder
         id: chart-folder
         run: echo ::set-output name=value::$(echo "$(dirname ${{ steps.chart-file.outputs.value }})")
@@ -156,15 +167,15 @@ jobs:
 # ----------------------  CREATE NAMESPACE ----------------------------
       - name: Create Namespace (and import TLS secret)
         run: |
-          if [[ $(kubectl get namespaces | grep ${{ needs.var.outputs.ns }}) ]]; then	
+          if [[ $(kubectl get namespaces | grep -E '(^|\s)${{ needs.var.outputs.ns }}($|\s)') ]]; then	
             echo "namespace exists"
           else
             echo "Create a new namespace '${{ needs.var.outputs.ns }}'"
             kubectl create namespace ${{ needs.var.outputs.ns }}
           
-            if [[ $(kubectl -n ${{ needs.var.outputs.ns }} get secret | grep ${{ inputs.ingress-tls-secret }}) ]]; then
+            if [[ $(kubectl -n ${{ needs.var.outputs.ns }} get secret | grep -E '(^|\s)${{ inputs.ingress-tls-secret }}($|\s)') ]]; then
                echo "Secret '${{ inputs.ingress-tls-secret }}' in the namespace '${{ needs.var.outputs.ns }}' already exists"
-            elif [[ $(kubectl -n default get secret | grep ${{ inputs.ingress-tls-secret }}) ]]; then
+            elif [[ $(kubectl -n default get secret | grep -E '(^|\s)${{ inputs.ingress-tls-secret }}($|\s)') ]]; then
                 echo "Import '${{ inputs.ingress-tls-secret }}' private key for SSL certificate from the '${{ inputs.ingress-tls-secret-ns }}' namespace"
                 kubectl get secret ${{ inputs.ingress-tls-secret }} -n ${{ inputs.ingress-tls-secret-ns }} -o yaml | \
                 sed 's/namespace: ${{ inputs.ingress-tls-secret-ns }}/namespace: ${{ needs.var.outputs.ns }}/' | \
@@ -175,7 +186,7 @@ jobs:
 # ----------------------  VAULT ----------------------------
       - name: Vault - Create Service Account
         run: |
-          if [[ $(kubectl -n ${{ needs.var.outputs.ns }} get sa | grep ${{ needs.var.outputs.ns }}-vault-sa) ]]; then
+          if [[ $(kubectl -n ${{ needs.var.outputs.ns }} get sa | grep -E '(^|\s)${{ needs.var.outputs.ns }}-vault-sa($|\s)') ]]; then
               echo "Service account '${{ needs.var.outputs.ns }}-vault-sa' in the namespace '${{ needs.var.outputs.ns }}' already exists"
           else
               echo "Create a new vault service account '${{ needs.var.outputs.ns }}-vault-sa' in the namespace '${{ needs.var.outputs.ns }}', if not exists"
@@ -220,7 +231,7 @@ jobs:
   
       - name: Vault - Cluster Role Binding
         run: |        
-          if [[ $(kubectl get clusterrolebinding | grep ${{ needs.var.outputs.ns }}-role-binding) ]]; then
+          if [[ $(kubectl get clusterrolebinding | grep  -E '(^|\s)${{ needs.var.outputs.ns }}-role-binding($|\s)') ]]; then
               echo "Clusterrolebinding '${{ needs.var.outputs.ns }}-role-binding' in the namespace '${{ needs.var.outputs.ns }}' already exists"
           else
               echo "Across the entire cluster, grant the permissions in the view ClusterRole to a service account"
@@ -331,7 +342,7 @@ jobs:
   
       - name: docker registry secret
         run: |  
-          if [[ $(kubectl get secrets -n=${{ needs.var.outputs.ns }} | grep ${{ inputs.docker-registry-secret }}) ]]; then
+          if [[ $(kubectl get secrets -n=${{ needs.var.outputs.ns }} | grep -E '(^|\s)${{ inputs.docker-registry-secret }}($|\s)') ]]; then
             echo "Secret '${{ inputs.docker-registry-secret }}' already exists"
           else
             echo "Create a secret '${{ inputs.docker-registry-secret }}' (used within the HELM chart)"
