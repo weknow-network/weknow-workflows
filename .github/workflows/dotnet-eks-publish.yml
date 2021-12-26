@@ -49,11 +49,10 @@ on:
         description: "the HELM version"
         required: false
         default: 3.7.1
-      helm-chart-path:
+      project: # ./{project}/charts/Chart.yaml
         type: string
-        description: "the HELM chart's path"
+        description: "the name of the project directory"
         required: false
-        # default: ./?.APIs/charts/Chart.yaml
       repo-owner:
         type: string
         description: "the repo owner"
@@ -108,13 +107,22 @@ jobs:
         id: ns
         run: echo ::set-output name=value::$(echo "wk-${{ steps.full-name.outputs.value }}")
   
+      - name: Image
+        id: image
+        run: |
+          if [ -z "${{ inputs.project }}" ]; then
+            echo ::set-output name=value::$(echo "${{ steps.short-name.outputs.value }}") # assuming single chart
+          else
+            echo ::set-output name=value::$(echo "${{ inputs.project }}")
+          fi
+  
       - name: Chart File
         id: chart-file
         run: |
-          if [ -z "${{ inputs.helm-chart-path }}" ]; then
+          if [ -z "${{ inputs.project }}" ]; then
             echo ::set-output name=value::$(echo "$((find . -name "Chart.yaml" -print &) | head -n 1)") # assuming single chart
           else
-            echo ::set-output name=value::$(echo "${{ inputs.helm-chart-path }}")
+            echo ::set-output name=value::$(echo "./${{ inputs.project }}/charts/Chart.yaml")
           fi
 
       - name: Chart Folder
@@ -127,6 +135,7 @@ jobs:
       ns: ${{ steps.ns.outputs.value }}
       chart-file: ${{ steps.chart-file.outputs.value }}
       chart-folder: ${{ steps.chart-folder.outputs.value }}
+      image: ${{ steps.image.outputs.value }}
 
   prepare-publish-to-eks:
     needs: var
@@ -361,8 +370,8 @@ jobs:
         run: |  
           helm upgrade ${{ needs.var.outputs.short-name }} ${{ needs.var.outputs.chart-folder }} \
             --install --wait --timeout 180s -n ${{ needs.var.outputs.ns }}  \
-            --set image.repository=ghcr.io/weknow-network/${{ needs.var.outputs.short-name }} \
             --debug \
+            --set image.repository=ghcr.io/weknow-network/${{ needs.var.outputs.image }} \
             --set image.tag=${{ steps.get-version.outputs.version }} \
             --set ingress.enabled=${{ inputs.ingress-enabled }} \
             --set ingress.name=${{ needs.var.outputs.full-name }} \

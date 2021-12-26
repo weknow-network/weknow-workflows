@@ -21,9 +21,9 @@ on:
         type: string
         description: "the repo owner"
         required: true
-      dockerfile-path:
+      project:
         type: string
-        description: "the dockerfile path"
+        description: "the name of the project directory"
         required: false
 
     secrets:
@@ -62,10 +62,10 @@ jobs:
       - name: Get DockerFile path
         id: dockerfile
         run: |
-          if [ -z "${{ inputs.dockerfile-path }}" ]; then
+          if [ -z "${{ inputs.project }}" ]; then
             echo ::set-output name=path::$(echo "$((find . -name "Dockerfile" -print &) | head -n 1)") # assuming single chart
           else
-            echo ::set-output name=path::$(echo "${{ inputs.dockerfile-path }}")
+            echo ::set-output name=path::$(echo "./${{ inputs.project }}/Dockerfile")
           fi
 
   
