@@ -149,6 +149,7 @@ jobs:
       chart-file: ${{ steps.chart-file.outputs.value }}
       chart-folder: ${{ steps.chart-folder.outputs.value }}
       image: ${{ steps.image.outputs.value }}
+      vault-sa: ${{ steps.vault-sa.outputs.value }}
 
   prepare-publish-to-eks:
     needs: var
