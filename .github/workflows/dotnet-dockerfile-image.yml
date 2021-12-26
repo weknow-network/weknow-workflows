@@ -21,6 +21,10 @@ on:
         type: string
         description: "the repo owner"
         required: true
+      dockerfile-path:
+        type: string
+        description: "the dockerfile path"
+        required: false
 
     secrets:
       UPLOAD_PACKAGE_LOCAL:
@@ -57,7 +61,13 @@ jobs:
         
       - name: Get DockerFile path
         id: dockerfile
-        run: echo ::set-output name=path::$(echo "$((find . -name "Dockerfile" -print &) | head -n 1)") # assuming single chart
+        run: |
+          if [ -z "${{ inputs.dockerfile-path }}" ]; then
+            echo ::set-output name=path::$(echo "$((find . -name "Dockerfile" -print &) | head -n 1)") # assuming single chart
+          else
+            echo ::set-output name=path::$(echo "${{ inputs.dockerfile-path }}")
+          fi
+
   
       - name: Build the Docker image
         run: docker build . --file ${{ steps.dockerfile.outputs.path }} --tag ${{ steps.full-name.outputs.value }}:${{ steps.get-version.outputs.version }}
