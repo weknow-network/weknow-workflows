@@ -60,6 +60,8 @@ jobs:
           else
             echo ::set-output name=value::$(echo "${{ inputs.project }} | sed 's/\./-/g' | sed 's/.*/\L&/'")
           fi
+        shell: bash
+
 
       - name: Full image path
         id: full-image-path
