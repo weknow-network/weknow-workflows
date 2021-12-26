@@ -62,13 +62,13 @@ jobs:
           fi
         shell: bash
 
+     
+      - id: get-version
+        uses: weknow-network/get-dotnet-version-action@v2
 
       - name: Full image path
         id: full-image-path
         run: echo ::set-output name=value::${{ env.BASE_PATH }}${{ steps.image.outputs.value }}:${{ steps.get-version.outputs.version }}
-     
-      - id: get-version
-        uses: weknow-network/get-dotnet-version-action@v2
         
       - name: Get DockerFile path
         id: dockerfile
