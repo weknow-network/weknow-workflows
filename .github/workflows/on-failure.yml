@@ -1,4 +1,4 @@
-name: Increment Version (Directory.Build.props)
+name: Throw On Error
 
 # doc:               https://docs.github.com/en/actions
 # variables:         https://docs.github.com/en/actions/learn-github-actions/environment-variables
@@ -12,13 +12,25 @@ on:
 jobs:
   on-failure:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
     steps:
       - name: Cancel Message
-        run: echo 'Canceled - Dependencies failure'
+        if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+        run: echo 'Stopped - Dependencies failure'
 
       - name: Throw
+        if: ${{ github.event.workflow_run.conclusion == 'failure' }}
         uses: actions/github-script@v5
         with:
           script: |
-              core.setFailed('Not runs, because of previous failure')
+              core.setFailed('Stopped because of previous failure')
+
+      - name: Cancel Message
+        if: ${{ github.event.workflow_run.conclusion == 'cancelled' }}
+        run: echo 'Cancelled'
+
+      - name: Throw
+        if: ${{ github.event.workflow_run.conclusion == 'cancelled' }}
+        uses: actions/github-script@v5
+        with:
+          script: |
+              core.setFailed('Cancelled because of previous cancellation')
