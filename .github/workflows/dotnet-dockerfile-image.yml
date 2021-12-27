@@ -43,7 +43,7 @@ jobs:
 
     steps:
       - id: throw-on-failure  
-        if: ${{ github.event.workflow_run.conclusion != 'success' }}
+        if: ${{ github.event.workflow_run.conclusion == 'failure' }}
         uses: weknow-network/weknow-throw-on-failure@v8    
 
       - uses: actions/checkout@v2
