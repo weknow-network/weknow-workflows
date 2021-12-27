@@ -96,8 +96,8 @@ jobs:
 
     steps:
       - id: throw-on-failure  
-        if: ${{ github.event.workflow_run.conclusion == 'failure' }}
-        uses: weknow-network/weknow-throw-on-failure@v8    
+        # if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+        uses: weknow-network/weknow-throw-on-failure@v10    
 
       - name: Checkout
         uses: actions/checkout@v2
@@ -158,8 +158,8 @@ jobs:
 
     steps:
       - id: throw-on-failure  
-        if: ${{ github.event.workflow_run.conclusion == 'failure' }}
-        uses: weknow-network/weknow-throw-on-failure@v8    
+        # if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+        uses: weknow-network/weknow-throw-on-failure@v10    
 
       - name: Checkout
         uses: actions/checkout@v2
@@ -327,8 +327,8 @@ jobs:
 
     steps:
       - id: throw-on-failure  
-        if: ${{ github.event.workflow_run.conclusion == 'failure' }}
-        uses: weknow-network/weknow-throw-on-failure@v8    
+        # if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+        uses: weknow-network/weknow-throw-on-failure@v10    
 
       - name: Checkout
         uses: actions/checkout@v2
