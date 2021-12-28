@@ -48,27 +48,27 @@ jobs:
 
       - uses: actions/checkout@v2
      
-      - name: Repo Format
-        id: repo-format
-        run: echo ::set-output name=value::$(echo "$GITHUB_REPOSITORY" | perl -p -e 's/weknow-network\/wk-(.*)/"$1"/eg' | tr '.' '-' | tr '[:upper:]' '[:lower:]')
-        shell: bash
-  
       - name: Short Name
-        id: short-name
+        id: short-image-name
+        run: echo ::set-output name=value::$(echo "$GITHUB_REPOSITORY" | perl -p -e 's/${{ inputs.organization }}\/${{ inputs.repo-prefix-convention }}(.*)/"$1"/eg')
+
+      - name: Image
+        id: image
         run: |
           if [ -z "${{ inputs.project }}" ]; then
-            echo ::set-output name=value::$(echo "${{ steps.repo-format.outputs.value }}" | tr '.' '-' | tr '[:upper:]' '[:lower:]')
+            echo ::set-output name=value::$(echo "${{ steps.short-image-name.outputs.value }}" | tr '.' '-' | tr '[:upper:]' '[:lower:]') # assuming single chart
           else
             echo ::set-output name=value::$(echo "${{ inputs.project }}" | tr '.' '-' | tr '[:upper:]' '[:lower:]')
           fi
         shell: bash
+
      
       - id: get-version
         uses: weknow-network/get-dotnet-version-action@v2
 
       - name: Full image path
         id: full-image-path
-        run: echo ::set-output name=value::${{ env.BASE_PATH }}${{ steps.short-name.outputs.value }}:${{ steps.get-version.outputs.version }}
+        run: echo ::set-output name=value::${{ env.BASE_PATH }}${{ steps.image.outputs.value }}:${{ steps.get-version.outputs.version }}
         
       - name: Get DockerFile path
         id: dockerfile
