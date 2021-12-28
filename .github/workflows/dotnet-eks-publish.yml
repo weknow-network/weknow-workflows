@@ -385,7 +385,7 @@ jobs:
           helm upgrade ${{ needs.var.outputs.image }} ${{ needs.var.outputs.chart-folder }} \
             --install --wait --timeout 180s -n ${{ needs.var.outputs.ns }}  \
             --debug --dry-run \
-            --set fullnameOverride=${{ needs.var.outputs.image }}
+            --set fullnameOverride=${{ needs.var.outputs.image }} \
             --set image.repository=${{ env.IMAGE_BASE_PATH }}${{ needs.var.outputs.image }} \
             --set image.tag=${{ steps.get-version.outputs.version }} \
             --set ingress.enabled=${{ inputs.ingress-enabled }} \
@@ -401,7 +401,7 @@ jobs:
           helm upgrade ${{ needs.var.outputs.image }} ${{ needs.var.outputs.chart-folder }} \
             --install --wait --timeout 180s -n ${{ needs.var.outputs.ns }}  \
             --debug \
-            --set fullnameOverride=${{ needs.var.outputs.image }}
+            --set fullnameOverride=${{ needs.var.outputs.image }} \
             --set image.repository=${{ env.IMAGE_BASE_PATH }}${{ needs.var.outputs.image }} \
             --set image.tag=${{ steps.get-version.outputs.version }} \
             --set ingress.enabled=${{ inputs.ingress-enabled }} \
