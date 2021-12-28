@@ -66,13 +66,9 @@ jobs:
       - id: get-version
         uses: weknow-network/get-dotnet-version-action@v2
 
-      - name: Full Name
-        id: full-name
-        run: echo ::set-output name=value::$(echo "${{ steps.short-name.outputs.value }}
-
       - name: Full image path
         id: full-image-path
-        run: echo ::set-output name=value::${{ env.BASE_PATH }}${{ steps.full-name.outputs.value }}:${{ steps.get-version.outputs.version }}
+        run: echo ::set-output name=value::${{ env.BASE_PATH }}${{ steps.short-name.outputs.value }}:${{ steps.get-version.outputs.version }}
         
       - name: Get DockerFile path
         id: dockerfile
