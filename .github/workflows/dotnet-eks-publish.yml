@@ -104,7 +104,7 @@ jobs:
   
       - name: Repo Format
         id: repo-format
-        run: echo ::set-output name=value::$(echo "$GITHUB_REPOSITORY" | perl -p -e 's/weknow-network\/wk-net-svc-(.*)/"$1"/eg' | tr '.' '-' | tr '[:upper:]' '[:lower:]')
+        run: echo ::set-output name=value::$(echo "$GITHUB_REPOSITORY" | perl -p -e 's/weknow-network\/wk-(.*)/"$1"/eg' | tr '.' '-' | tr '[:upper:]' '[:lower:]')
         shell: bash
   
       - name: Short Name
@@ -113,7 +113,7 @@ jobs:
           if [ -z "${{ inputs.project }}" ]; then
             echo ::set-output name=value::$(echo "${{ steps.repo-format.outputs.value }}" | tr '.' '-' | tr '[:upper:]' '[:lower:]')
           else
-            echo ::set-output name=value::$(echo "wk-${{ inputs.project }}" | tr '.' '-' | tr '[:upper:]' '[:lower:]')
+            echo ::set-output name=value::$(echo "${{ inputs.project }}" | tr '.' '-' | tr '[:upper:]' '[:lower:]')
           fi
         shell: bash
   
@@ -385,7 +385,7 @@ jobs:
             --install --wait --timeout 180s -n ${{ needs.var.outputs.ns }}  \
             --debug \
             --set fullnameOverride=${{ needs.var.outputs.full-name }} \
-            --set image.repository=${{ env.IMAGE_BASE_PATH }}${{ needs.var.outputs.full-name }} \
+            --set image.repository=${{ env.IMAGE_BASE_PATH }}${{ needs.var.outputs.short-name }} \
             --set image.tag=${{ steps.get-version.outputs.version }} \
             --set ingress.enabled=${{ inputs.ingress-enabled }} \
             --set ingress.name=${{ needs.var.outputs.full-name }} \
