@@ -392,6 +392,6 @@ jobs:
             --set vault.inject=${{ inputs.vault-inject-enabled }} \
             --set vault.serviceAccount=${{ needs.var.outputs.vault-sa }} \
             --set vault.role=${{ needs.var.outputs.ns }} \
-            --set vault.secretName=${{ needs.var.outputs.short-name }} \
+            --set vault.secretName=${{ needs.var.outputs.vault-sa}} \
             --set probes.enabled=${{ inputs.probs-enabled }}
   
