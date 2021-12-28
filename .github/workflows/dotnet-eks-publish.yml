@@ -115,6 +115,16 @@ jobs:
         id: ns
         run: echo ::set-output name=value::$(echo "wk-${{ steps.full-name.outputs.value }}")
   
+      - name: Ingress
+        id: ingress
+        run: |
+          if [ -z "${{ inputs.project }}" ]; then
+            echo ::set-output name=value::$(echo "${{ steps.short-name.outputs.value }}-v${{ inputs.ns-version}}") # assuming single chart
+          else
+            echo ::set-output name=value::$(echo "${{ inputs.project }}-v${{ inputs.ns-version}}" | tr '.' '-' | tr '[:upper:]' '[:lower:]')
+          fi
+        shell: bash
+  
       - name: Image
         id: image
         run: |
@@ -146,6 +156,7 @@ jobs:
       short-name: ${{ steps.short-name.outputs.value }}
       full-name: ${{ steps.full-name.outputs.value }}
       ns: ${{ steps.ns.outputs.value }}
+      ingress: ${{ steps.ingress.outputs.value }}
       chart-file: ${{ steps.chart-file.outputs.value }}
       chart-folder: ${{ steps.chart-folder.outputs.value }}
       image: ${{ steps.image.outputs.value }}
@@ -389,7 +400,7 @@ jobs:
             --set image.repository=${{ env.IMAGE_BASE_PATH }}${{ needs.var.outputs.image }} \
             --set image.tag=${{ steps.get-version.outputs.version }} \
             --set ingress.enabled=${{ inputs.ingress-enabled }} \
-            --set ingress.name=${{ needs.var.outputs.full-name }} \
+            --set ingress.name=${{ needs.var.outputs.ingress }} \
             --set vault.inject=${{ inputs.vault-inject-enabled }} \
             --set vault.serviceAccount=${{ needs.var.outputs.vault-sa }} \
             --set vault.role=${{ needs.var.outputs.ns }} \
