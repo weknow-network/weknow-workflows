@@ -378,23 +378,7 @@ jobs:
           fi
           
       - id: get-version  # use it with ${{ steps.get-version.outputs.version }}
-        uses: weknow-network/get-dotnet-version-action@v2
-           
-      - name: HELM upgrade
-        run: |  
-          helm upgrade ${{ needs.var.outputs.image }} ${{ needs.var.outputs.chart-folder }} \
-            --install --wait --timeout 180s -n ${{ needs.var.outputs.ns }}  \
-            --debug --dry-run \
-            --set fullnameOverride=${{ needs.var.outputs.image }} \
-            --set image.repository=${{ env.IMAGE_BASE_PATH }}${{ needs.var.outputs.image }} \
-            --set image.tag=${{ steps.get-version.outputs.version }} \
-            --set ingress.enabled=${{ inputs.ingress-enabled }} \
-            --set ingress.name=${{ needs.var.outputs.full-name }} \
-            --set vault.inject=${{ inputs.vault-inject-enabled }} \
-            --set vault.serviceAccount=${{ needs.var.outputs.vault-sa }} \
-            --set vault.role=${{ needs.var.outputs.ns }} \
-            --set vault.secretName=${{ needs.var.outputs.short-name }} \
-            --set probes.enabled=${{ inputs.probs-enabled }}
+        uses: weknow-network/get-dotnet-version-action@v2           
            
       - name: HELM upgrade
         run: |  
