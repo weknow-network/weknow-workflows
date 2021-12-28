@@ -111,9 +111,9 @@ jobs:
         id: short-name
         run: |
           if [ -z "${{ inputs.project }}" ]; then
-            echo ::set-output name=value::$(echo "${{ steps.repo-format.outputs.value }}-v${{ inputs.ns-version}}" | tr '.' '-' | tr '[:upper:]' '[:lower:]')
+            echo ::set-output name=value::$(echo "${{ steps.repo-format.outputs.value }}" | tr '.' '-' | tr '[:upper:]' '[:lower:]')
           else
-            echo ::set-output name=value::$(echo "wk-net-svc-${{ inputs.project }}-v${{ inputs.ns-version}}" | tr '.' '-' | tr '[:upper:]' '[:lower:]')
+            echo ::set-output name=value::$(echo "wk-${{ inputs.project }}" | tr '.' '-' | tr '[:upper:]' '[:lower:]')
           fi
         shell: bash
   
