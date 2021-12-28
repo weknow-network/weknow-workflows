@@ -48,22 +48,18 @@ jobs:
 
       - uses: actions/checkout@v2
      
-      # - name: Short Name
-      #   id: short-image-name
-      #   run: echo ::set-output name=value::$(echo "$GITHUB_REPOSITORY" | perl -p -e 's/${{ inputs.organization }}\/${{ inputs.repo-prefix-convention }}(.*)/"$1"/eg')
-
       - name: Short Name
         id: short-image-name
-        run: |
-          if [ -z "${{ inputs.project }}" ]; then
-            echo ::set-output name=value::$(echo "$GITHUB_REPOSITORY" | perl -p -e 's/weknow-network\/wk-(.*)/"$1"/eg' | tr '.' '-' | tr '[:upper:]' '[:lower:]')
-          else
-            echo ::set-output name=value::$(echo "${{ inputs.project }}" | tr '.' '-' | tr '[:upper:]' '[:lower:]')
-        shell: bash
+        run: echo ::set-output name=value::$(echo "$GITHUB_REPOSITORY" | perl -p -e 's/${{ inputs.organization }}\/${{ inputs.repo-prefix-convention }}(.*)/"$1"/eg')
 
       - name: Image
         id: image
-        run: echo ::set-output name=value::$(echo "${{ steps.short-image-name.outputs.value }}") 
+        run: |
+          if [ -z "${{ inputs.project }}" ]; then
+            echo ::set-output name=value::$(echo "${{ steps.short-image-name.outputs.value }}" | tr '.' '-' | tr '[:upper:]' '[:lower:]') # assuming single chart
+          else
+            echo ::set-output name=value::$(echo "${{ inputs.project }}" | tr '.' '-' | tr '[:upper:]' '[:lower:]')
+          fi
         shell: bash
 
      

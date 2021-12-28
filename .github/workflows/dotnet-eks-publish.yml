@@ -104,11 +104,7 @@ jobs:
   
       - name: Short Name
         id: short-name
-        run: |
-          if [ -z "${{ inputs.project }}" ]; then
-            echo ::set-output name=value::$(echo "$GITHUB_REPOSITORY" | perl -p -e 's/weknow-network\/wk-(.*)/"$1"/eg' | tr '.' '-' | tr '[:upper:]' '[:lower:]')
-          else
-            echo ::set-output name=value::$(echo "${{ inputs.project }}" | tr '.' '-' | tr '[:upper:]' '[:lower:]')
+        run: echo ::set-output name=value::$(echo "$GITHUB_REPOSITORY" | perl -p -e 's/weknow-network\/wk-net-svc-(.*)/"$1"/eg' | tr '.' '-' | tr '[:upper:]' '[:lower:]')
         shell: bash
   
       - name: Full Name
@@ -118,6 +114,26 @@ jobs:
       - name: Namespace
         id: ns
         run: echo ::set-output name=value::$(echo "wk-${{ steps.full-name.outputs.value }}")
+  
+      - name: Ingress
+        id: ingress
+        run: |
+          if [ -z "${{ inputs.project }}" ]; then
+            echo ::set-output name=value::$(echo "${{ steps.short-name.outputs.value }}-v${{ inputs.ns-version}}") # assuming single chart
+          else
+            echo ::set-output name=value::$(echo "${{ inputs.project }}-v${{ inputs.ns-version}}" | tr '.' '-' | tr '[:upper:]' '[:lower:]')
+          fi
+        shell: bash
+  
+      - name: Image
+        id: image
+        run: |
+          if [ -z "${{ inputs.project }}" ]; then
+            echo ::set-output name=value::$(echo "${{ steps.short-name.outputs.value }}") # assuming single chart
+          else
+            echo ::set-output name=value::$(echo "${{ inputs.project }}" | tr '.' '-' | tr '[:upper:]' '[:lower:]')
+          fi
+        shell: bash
   
       - name: Chart File
         id: chart-file
@@ -140,8 +156,10 @@ jobs:
       short-name: ${{ steps.short-name.outputs.value }}
       full-name: ${{ steps.full-name.outputs.value }}
       ns: ${{ steps.ns.outputs.value }}
+      ingress: ${{ steps.ingress.outputs.value }}
       chart-file: ${{ steps.chart-file.outputs.value }}
       chart-folder: ${{ steps.chart-folder.outputs.value }}
+      image: ${{ steps.image.outputs.value }}
       vault-sa: ${{ steps.vault-sa.outputs.value }}
 
   prepare-publish-to-eks:
@@ -375,14 +393,14 @@ jobs:
            
       - name: HELM upgrade
         run: |  
-          helm upgrade ${{ needs.var.outputs.short-name }} ${{ needs.var.outputs.chart-folder }} \
+          helm upgrade ${{ needs.var.outputs.image }} ${{ needs.var.outputs.chart-folder }} \
             --install --wait --timeout 180s -n ${{ needs.var.outputs.ns }}  \
             --debug \
-            --set fullnameOverride=${{ needs.var.outputs.short-name }} \
-            --set image.repository=${{ env.IMAGE_BASE_PATH }}${{ needs.var.outputs.short-name }} \
+            --set fullnameOverride=${{ needs.var.outputs.image }} \
+            --set image.repository=${{ env.IMAGE_BASE_PATH }}${{ needs.var.outputs.image }} \
             --set image.tag=${{ steps.get-version.outputs.version }} \
             --set ingress.enabled=${{ inputs.ingress-enabled }} \
-            --set ingress.name=${{ needs.var.outputs.full-name }} \
+            --set ingress.name=${{ needs.var.outputs.ingress }} \
             --set vault.inject=${{ inputs.vault-inject-enabled }} \
             --set vault.serviceAccount=${{ needs.var.outputs.vault-sa }} \
             --set vault.role=${{ needs.var.outputs.ns }} \
