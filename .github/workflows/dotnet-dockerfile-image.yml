@@ -55,11 +55,11 @@ jobs:
       - name: Short Image Name
         id: short-image-name
         run: |
-          if [[ -z "${{ inputs.project }}" ]]; then
+          if [ -z "${{ inputs.project }}" ]; then
             echo ::set-output name=value::$(echo "$GITHUB_REPOSITORY" | perl -p -e 's/weknow-network\/wk-(.*)/"$1"/eg' | tr '.' '-' | tr '[:upper:]' '[:lower:]')
           else
             echo ::set-output name=value::$(echo "${{ inputs.project }}" | tr '.' '-' | tr '[:upper:]' '[:lower:]')
-        shell: bash
+        # shell: bash
 
       - name: Image
         id: image
@@ -77,7 +77,7 @@ jobs:
       - name: Get DockerFile path
         id: dockerfile
         run: |
-          if [[ -z "${{ inputs.project }}" ]]; then
+          if [ -z "${{ inputs.project }}" ]; then
             echo ::set-output name=path::$(echo "$((find . -name "Dockerfile" -print &) | head -n 1)") # assuming single chart
           else
             echo ::set-output name=path::$(echo "./${{ inputs.project }}/Dockerfile")
