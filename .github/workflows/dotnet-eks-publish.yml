@@ -22,11 +22,6 @@ on:
         description: "indicate whether to enable health & readiness"
         required: false
         default: true
-      vault-inject-enabled:
-        type: boolean
-        description: "indicate whether to enable vault inject"
-        required: false
-        default: true
       ingress-enabled:
         type: boolean
         description: "indicate whether to enable ingress"
@@ -73,18 +68,15 @@ on:
       EKS_ACCESS_KEY_SECRET:
         description: "aws access key secret."
         required: true  
-      WK_VAULT_NAMESPACE:
-        description: "vault namespace."
-        required: true  
-      WK_VAULT_UNSEAL_KEY:
-        description: "vault unseal key."
-        required: true  
-      WK_VAULT_ROOT_TOKEN:
-        description: "vault root token."
-        required: true  
       READ_PACKAGES_LOCAL:
         description: "docker registry read permission."
         required: true  
+      SECRETS_COMMON:
+        description: "common secrets injection"
+        required: true          
+      SECRETS_OF_MODULE:
+        description: "module specific secrets injection"
+        required: false          
 
 env: # https://docs.github.com/en/actions/learn-github-actions/environment-variables
   IMAGE_BASE_PATH: ghcr.io/${{ inputs.organization }}/
@@ -203,119 +195,6 @@ jobs:
             fi
           fi
 
-# ----------------------  VAULT ----------------------------
-      - name: Vault - Create Service Account
-        run: |
-          if [[ $(kubectl -n ${{ needs.var.outputs.ns }} get sa | grep -E '(^|\s)${{ needs.var.outputs.vault-sa }}($|\s)') ]]; then
-              echo "Service account '${{ needs.var.outputs.vault-sa }}' in the namespace '${{ needs.var.outputs.ns }}' already exists"
-          else
-              echo "Create a new vault service account '${{ needs.var.outputs.vault-sa }}' in the namespace '${{ needs.var.outputs.ns }}', if not exists"
-              kubectl -n ${{ needs.var.outputs.ns }} create sa ${{ needs.var.outputs.vault-sa }}
-          
-              echo "Create a new yaml file 'Role.yaml'"
-          cat > Role.yaml <<EOF 
-          kind: Role
-          apiVersion: rbac.authorization.k8s.io/v1
-          metadata:  
-            name: ${{ needs.var.outputs.vault-sa }}-role
-            namespace: ${{ needs.var.outputs.ns }}
-          rules:
-          - apiGroups: ["", "extensions", "apps"]
-            resources: ["deployments", "replicasets", "pods"]
-            verbs: ["get", "list", "watch", "create", "update", "patch", "delete"] # You can also use ["*"]
-          EOF
-          echo "Create a new yaml file 'RoleBinding.yaml'"
-          cat > RoleBinding.yaml <<EOF 
-          kind: RoleBinding
-          apiVersion: rbac.authorization.k8s.io/v1
-          metadata: 
-            name: ${{ needs.var.outputs.vault-sa }}-role-binding
-            namespace: ${{ needs.var.outputs.ns }}
-          subjects: 
-          - kind: ServiceAccount 
-            name: ${{ needs.var.outputs.vault-sa }}
-            namespace: ${{ needs.var.outputs.ns }}
-            apiGroup: ""
-          roleRef: 
-            kind: Role
-            name: ${{ needs.var.outputs.vault-sa }}-role
-            apiGroup: ""
-          EOF
-          
-              echo "Create a new Role for the '${{ needs.var.outputs.vault-sa }}' service account"
-              kubectl apply -f Role.yaml
-          
-              echo "Create a new Role for the '${{ needs.var.outputs.vault-sa }}' service account"
-              kubectl apply -f RoleBinding.yaml
-          fi
-  
-      - name: Vault - Cluster Role Binding
-        run: |        
-          if [[ $(kubectl get clusterrolebinding | grep  -E '(^|\s)${{ needs.var.outputs.ns }}-role-binding($|\s)') ]]; then
-              echo "Clusterrolebinding '${{ needs.var.outputs.ns }}-role-binding' in the namespace '${{ needs.var.outputs.ns }}' already exists"
-          else
-              echo "Across the entire cluster, grant the permissions in the view ClusterRole to a service account"
-              kubectl create clusterrolebinding ${{ needs.var.outputs.ns }}-role-binding --clusterrole=system:auth-delegator --serviceaccount=${{ needs.var.outputs.ns }}:${{ needs.var.outputs.vault-sa }}
-          fi
-  
-      - name: Vault - Unseal
-        run: |
-          
-          echo "Unseal vault"
-          kubectl -n ${{ secrets.WK_VAULT_NAMESPACE }} exec -it vault-0 -- vault operator unseal ${{ secrets.WK_VAULT_UNSEAL_KEY }}
-          
-      - name: Vault - Login to vault
-        run: |        
-          echo "Login to vault"
-          kubectl -n ${{ secrets.WK_VAULT_NAMESPACE }} exec -it vault-0 -- vault login ${{ secrets.WK_VAULT_ROOT_TOKEN }} 
-  
-      - name: Get Vault sa-name
-        id: vault-sa-name
-        run: echo ::set-output name=value::$(echo $(kubectl -n ${{ needs.var.outputs.ns }} get serviceaccount ${{ needs.var.outputs.vault-sa }} -o jsonpath='{.secrets[0].name}'))
-  
-      - name: Validate Vault sa-name
-        run: |
-          echo "sa-name=${{ steps.vault-sa-name.outputs.value }}"
-  
-      - name: Get Vault sa-jwt-token
-        id: vault-sa-jwt-token
-        run: echo ::set-output name=value::$(echo $(kubectl -n ${{ needs.var.outputs.ns }} get secret ${{ steps.vault-sa-name.outputs.value }} -o jsonpath='{.data.token}' | base64 --decode))
-  
-      - name: Validate Vault jwt
-        run: |
-          echo "sa-jwt-token=${{ steps.vault-sa-jwt-token.outputs.value }}"
-  
-      - name: Vault - CERT
-        run: |      
-          echo "Get encoded CA cert used to talk to Kubernetes API"
-          SA_CA_CRT=$(kubectl -n ${{ needs.var.outputs.ns }} get secret ${{ steps.vault-sa-name.outputs.value }} -o jsonpath="{.data.ca\.crt}" | base64 --decode; echo)
-          echo "SA_CA_CRT = $SA_CA_CRT"
-          
-          echo "Get Kubernetes master server URL"
-          K8S_HOST=$(kubectl -n ${{ needs.var.outputs.ns }} config view --minify -o jsonpath='{.clusters[0].cluster.server}')
-          
-          echo "Configure the backend with the Kubernetes master server URL and certificate-authority-data"
-          kubectl -n ${{ secrets.WK_VAULT_NAMESPACE }} exec -it vault-0 -- vault write auth/kubernetes/config kubernetes_host="$K8S_HOST" kubernetes_ca_cert="$SA_CA_CRT" token_reviewer_jwt=${{ needs.var.outputs.vault-sa-jwt-token}}
-  
-      - name: Vault - Auth Token
-        run: |              
-          echo "Create a new role '${{ needs.var.outputs.ns }}'"
-          kubectl -n ${{ secrets.WK_VAULT_NAMESPACE }} exec -it vault-0 -- vault write auth/kubernetes/role/${{ needs.var.outputs.ns }} \
-          bound_service_account_names=${{ needs.var.outputs.vault-sa }} \
-          bound_service_account_namespaces=${{ needs.var.outputs.ns }} \
-          policies=provisioner \
-          ttl=1h
-          
-          echo "Add '${{ needs.var.outputs.ns }}' role to the 'Kubernetes Auth' backend of the vault using the service account token"
-          kubectl -n ${{ secrets.WK_VAULT_NAMESPACE }} exec -it vault-0 -- vault write auth/kubernetes/login role=${{ needs.var.outputs.ns }} jwt=${{ steps.vault-sa-jwt-token.outputs.value }}
-          
-      - name: create vault entry if not exists
-        run: |         
-          echo "Should CREATE '${{ needs.var.outputs.short-name }}' entry for the service"
-        # echo "Create a new vault secret '${{ needs.var.outputs.short-name }}' with key 'ping' and value 'Ok'"
-        # kubectl -n ${{ secrets.WK_VAULT_NAMESPACE }} exec -it vault-0 -- vault kv put secret/${{ needs.var.outputs.short-name }} ping="Ok"
-        shell: bash
-
 # ----------------------  HELM ----------------------------
   publish-to-eks:
     needs: [var, prepare-publish-to-eks]
@@ -387,9 +266,6 @@ jobs:
             --set image.tag=${{ steps.get-version.outputs.version }} \
             --set ingress.enabled=${{ inputs.ingress-enabled }} \
             --set ingress.name=${{ needs.var.outputs.full-name }} \
-            --set vault.inject=${{ inputs.vault-inject-enabled }} \
-            --set vault.serviceAccount=${{ needs.var.outputs.vault-sa }} \
-            --set vault.role=${{ needs.var.outputs.ns }} \
-            --set vault.secretName=${{ needs.var.outputs.short-name }} \
-            --set probes.enabled=${{ inputs.probs-enabled }}
+            --set probes.enabled=${{ inputs.probs-enabled }} \
+            --set ${{ secrets.SECRETS_COMMON }},${{ secrets.SECRETS_OF_MODULE }}
   
