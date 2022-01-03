@@ -261,6 +261,7 @@ jobs:
           echo "Add bitnami repo"          
           helm repo add Weknow-charts https://weknow-network.github.io/helm-private-repos/ 
           helm repo update
+          helm repo list
           helm search repo Weknow-charts
           
       - name: HELM upgrade
