@@ -77,6 +77,9 @@ on:
       SECRETS_OF_MODULE:
         description: "module specific secrets injection"
         required: false          
+      GITHUB_HELM_TOKEN:
+        description: "token to the helm repo"
+        required: true          
 
 env: # https://docs.github.com/en/actions/learn-github-actions/environment-variables
   IMAGE_BASE_PATH: ghcr.io/${{ inputs.organization }}/
@@ -259,14 +262,18 @@ jobs:
       - name: Add repo
         run: |
           echo "Add bitnami repo"          
-          helm repo add Weknow-charts https://weknow-network.github.io/helm-private-repos/ 
+          helm repo add Weknow-charts https://weknow-network.github.io/helm-private-repos/ \
+            --username "${secrets.GITHUB_HELM_TOKEN}" \
+            --password "${secrets.GITHUB_HELM_TOKEN}" \
           helm repo update
           helm repo list
           helm search repo Weknow-charts
           
       - name: HELM upgrade
         run: |  
-          helm upgrade ${{ needs.var.outputs.short-name }} weknow-charts/micro-svc \
+          helm upgrade ${{ needs.var.outputs.short-name }} weknow-charts/micro-svc \\
+            --username "${secrets.GITHUB_HELM_TOKEN}" \
+            --password "${secrets.GITHUB_HELM_TOKEN}" \
             --install --wait --timeout 180s -n ${{ needs.var.outputs.ns }}  \
             --debug \
             --set fullnameOverride=${{ needs.var.outputs.short-name }} \
