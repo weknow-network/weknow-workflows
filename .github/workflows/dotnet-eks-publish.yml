@@ -256,9 +256,16 @@ jobs:
       - id: get-version  # use it with ${{ steps.get-version.outputs.version }}
         uses: weknow-network/get-dotnet-version-action@v2           
            
+      - name: Add repo
+        run: |
+          echo "Add bitnami repo"          
+          helm repo add Weknow-charts https://weknow-network.github.io/helm-private-repos/ 
+          helm repo update
+          helm search repo Weknow-charts
+          
       - name: HELM upgrade
         run: |  
-          helm upgrade ${{ needs.var.outputs.short-name }} ${{ needs.var.outputs.chart-folder }} \
+          helm upgrade ${{ needs.var.outputs.short-name }} weknow-charts/micro-svc \
             --install --wait --timeout 180s -n ${{ needs.var.outputs.ns }}  \
             --debug \
             --set fullnameOverride=${{ needs.var.outputs.short-name }} \
