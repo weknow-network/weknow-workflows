@@ -204,7 +204,8 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: weknow-network/helm-private-repos
-          token: ${{ secrets.GITHUB_HELM_TOKEN }} 
+          token: ${{ secrets.GITHUB_HELM_TOKEN }} WRONG
+          persist-credentials: false
           path: stable\net-micro-svc
 
 # ----------------------  SETUP + CREDENTIALS ----------------------------      
