@@ -265,7 +265,7 @@ jobs:
           
       - name: HELM upgrade
         run: |  
-          helm upgrade ${{ needs.var.outputs.short-name }} weknow-charts/micro-svc \\
+          helm upgrade ${{ needs.var.outputs.short-name }} weknow-charts/micro-svc \
             --install --wait --timeout 180s -n ${{ needs.var.outputs.ns }}  \
             --debug \
             --set fullnameOverride=${{ needs.var.outputs.short-name }} \
@@ -276,7 +276,7 @@ jobs:
             --set probes.enabled=${{ inputs.probs-enabled }} \
             --set ${{ secrets.SECRETS_COMMON }},${{ secrets.SECRETS_OF_MODULE }}
 
-        # helm upgrade ${{ needs.var.outputs.short-name }} . \\
+        # helm upgrade ${{ needs.var.outputs.short-name }} . \
         # --username "${secrets.GITHUB_HELM_TOKEN}" \
         # --password "${secrets.GITHUB_HELM_TOKEN}" \
 
