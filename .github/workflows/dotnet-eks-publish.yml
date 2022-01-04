@@ -256,12 +256,12 @@ jobs:
            
       - name: Add repo
         run: |
-          echo "helm repo add Weknow-charts"          
-          helm repo add Weknow-charts \
+          echo "helm repo add weknow-charts"          
+          helm repo add weknow-charts \
             https://weknow-network.github.io/helm-private-repos/
           helm repo update
           helm repo list
-          helm search repo Weknow-charts
+          helm search repo weknow-charts
           
       - name: HELM upgrade
         run: |  
