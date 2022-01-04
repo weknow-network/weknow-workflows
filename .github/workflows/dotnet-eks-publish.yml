@@ -77,9 +77,9 @@ on:
       SECRETS_OF_MODULE:
         description: "module specific secrets injection"
         required: false          
-      GITHUB_HELM_TOKEN:
-        description: "token to the helm repo"
-        required: true          
+      # GITHUB_HELM_TOKEN:
+      #   description: "token to the helm repo"
+      #   required: true          
 
 env: # https://docs.github.com/en/actions/learn-github-actions/environment-variables
   IMAGE_BASE_PATH: ghcr.io/${{ inputs.organization }}/
@@ -199,13 +199,13 @@ jobs:
         # if: ${{ github.event.workflow_run.conclusion == 'failure' }}
         uses: weknow-network/weknow-throw-on-failure@v13    
 
-      # https://github.com/actions/checkout
-      - name: Checkout Helm Repo
-        uses: actions/checkout@v2
-        with:
-          repository: weknow-network/helm-private-repos
-          token: ${{ secrets.GITHUB_HELM_TOKEN }}
-          path: stable\net-micro-svc
+      # # https://github.com/actions/checkout
+      # - name: Checkout Helm Repo
+      #   uses: actions/checkout@v2
+      #   with:
+      #     repository: weknow-network/helm-private-repos
+      #     token: ${{ secrets.GITHUB_HELM_TOKEN }}
+      #     path: stable\net-micro-svc
 
 # ----------------------  SETUP + CREDENTIALS ----------------------------      
       - name: Configure AWS credentials
@@ -266,8 +266,6 @@ jobs:
       - name: HELM upgrade
         run: |  
           helm upgrade ${{ needs.var.outputs.short-name }} weknow-charts/micro-svc \\
-            --username "${secrets.GITHUB_HELM_TOKEN}" \
-            --password "${secrets.GITHUB_HELM_TOKEN}" \
             --install --wait --timeout 180s -n ${{ needs.var.outputs.ns }}  \
             --debug \
             --set fullnameOverride=${{ needs.var.outputs.short-name }} \
@@ -279,4 +277,7 @@ jobs:
             --set ${{ secrets.SECRETS_COMMON }},${{ secrets.SECRETS_OF_MODULE }}
 
         # helm upgrade ${{ needs.var.outputs.short-name }} . \\
+        # --username "${secrets.GITHUB_HELM_TOKEN}" \
+        # --password "${secrets.GITHUB_HELM_TOKEN}" \
+
   
