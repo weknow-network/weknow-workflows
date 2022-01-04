@@ -207,6 +207,9 @@ jobs:
       #     token: ${{ secrets.GITHUB_HELM_TOKEN }}
       #     path: stable\net-micro-svc
 
+      # https://github.com/actions/checkout
+      - uses: actions/checkout@v2 # needed for get version
+
 # ----------------------  SETUP + CREDENTIALS ----------------------------      
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1

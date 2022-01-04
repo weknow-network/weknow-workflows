@@ -46,7 +46,8 @@ jobs:
         # if: ${{ github.event.workflow_run.conclusion == 'failure' }}
         uses: weknow-network/weknow-throw-on-failure@v13    
 
-      - uses: actions/checkout@v2
+      # https://github.com/actions/checkout
+      - uses: actions/checkout@v2 # needed for get version
      
       # - name: Short Name
       #   id: short-image-name
