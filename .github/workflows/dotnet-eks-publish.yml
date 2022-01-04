@@ -260,8 +260,7 @@ jobs:
       - name: Add repo
         run: |
           echo "helm repo add weknow-charts"          
-          helm repo add weknow-charts \
-            https://weknow-network.github.io/helm-private-repos/
+          helm repo add weknow-charts https://weknow-network.github.io/wk-helm-repos/
           helm repo update
           helm repo list
           helm search repo weknow-charts
