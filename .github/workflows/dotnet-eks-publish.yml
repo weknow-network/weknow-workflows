@@ -52,6 +52,10 @@ on:
         type: string
         description: "the name of the project directory"
         required: true
+      ingress: 
+        type: string
+        description: "the name of the ingress host (without the version)"
+        required: false
       repo-owner:
         type: string
         description: "the repo owner"
@@ -107,6 +111,17 @@ jobs:
         id: full-name
         run: echo ::set-output name=value::$(echo "${{ steps.short-name.outputs.value }}-v${{ inputs.ns-version}}")
   
+      - name: Ingress host name
+        id: ingress
+        run: |
+          if [ -z "${{ inputs.ingress }}" ]
+          then
+            echo ::set-output name=value::$(echo "${{ steps.full-name.outputs.value }}")
+          else
+            echo ::set-output name=value::$(echo "${{ inputs.ingress }}-v${{ inputs.ns-version}}")
+          fi
+        shell: bash
+  
       - name: Namespace
         id: ns
         run: echo ::set-output name=value::$(echo "wk-${{ steps.full-name.outputs.value }}")
@@ -129,6 +144,7 @@ jobs:
       short-name: ${{ steps.short-name.outputs.value }}
       full-name: ${{ steps.full-name.outputs.value }}
       ns: ${{ steps.ns.outputs.value }}
+      ingress: ${{ steps.ingress.outputs.value }}
       # chart-file: ${{ steps.chart-file.outputs.value }}
       # chart-folder: ${{ steps.chart-folder.outputs.value }}
       # vault-sa: ${{ steps.vault-sa.outputs.value }}
@@ -274,7 +290,7 @@ jobs:
             --set image.repository=${{ env.IMAGE_BASE_PATH }}${{ needs.var.outputs.short-name }} \
             --set image.tag=${{ steps.get-version.outputs.version }} \
             --set ingress.enabled=${{ inputs.ingress-enabled }} \
-            --set ingress.name=${{ needs.var.outputs.full-name }} \
+            --set ingress.name=${{ needs.var.outputs.ingress }} \
             --set probes.enabled=${{ inputs.probs-enabled }} \
             --set ${{ secrets.SECRETS_COMMON }},${{ secrets.SECRETS_OF_MODULE }}
 
