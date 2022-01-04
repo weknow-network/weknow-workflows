@@ -13,9 +13,22 @@ on:
         type: string
         description: "github organization / user of the repo"
         required: true
+      key: 
+        type: string
+        description: "a short name used for namespace and ingress host (without the version)"
+        required: false
       ns-version:
         type: number
         description: "version of the namespace"
+        required: true
+      helm-version:
+        type: string
+        description: "the HELM version"
+        required: false
+        default: 3.7.1
+      project: 
+        type: string
+        description: "the name of the project directory"
         required: true
       probs-enabled:
         type: boolean
@@ -43,19 +56,6 @@ on:
         type: string
         description: "the cluster region"
         required: true
-      helm-version:
-        type: string
-        description: "the HELM version"
-        required: false
-        default: 3.7.1
-      project: 
-        type: string
-        description: "the name of the project directory"
-        required: true
-      ingress: 
-        type: string
-        description: "the name of the ingress host (without the version)"
-        required: false
       repo-owner:
         type: string
         description: "the repo owner"
@@ -112,7 +112,7 @@ jobs:
         run: echo ::set-output name=value::$(echo "${{ steps.short-name.outputs.value }}-v${{ inputs.ns-version}}")
   
       - name: Ingress host name
-        id: ingress
+        id: key
         run: |
           if [ -z "${{ inputs.ingress }}" ]
           then
@@ -124,7 +124,7 @@ jobs:
   
       - name: Namespace
         id: ns
-        run: echo ::set-output name=value::$(echo "wk-${{ steps.full-name.outputs.value }}")
+        run: echo ::set-output name=value::$(echo "wk-${{ steps.key.outputs.value }}")
   
       # - name: Chart File
       #   id: chart-file
@@ -144,7 +144,7 @@ jobs:
       short-name: ${{ steps.short-name.outputs.value }}
       full-name: ${{ steps.full-name.outputs.value }}
       ns: ${{ steps.ns.outputs.value }}
-      ingress: ${{ steps.ingress.outputs.value }}
+      ingress: ${{ steps.key.outputs.value }}
       # chart-file: ${{ steps.chart-file.outputs.value }}
       # chart-folder: ${{ steps.chart-folder.outputs.value }}
       # vault-sa: ${{ steps.vault-sa.outputs.value }}
