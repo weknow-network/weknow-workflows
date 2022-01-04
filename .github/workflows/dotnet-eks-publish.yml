@@ -264,15 +264,14 @@ jobs:
       - id: get-version  # use it with ${{ steps.get-version.outputs.version }}
         uses: weknow-network/get-dotnet-version-action@v2           
            
-      - name: Add repo
-        run: |
-          echo "Add bitnami repo"          
-          helm repo add Weknow-charts https://weknow-network.github.io/helm-private-repos/ \
-            --username "${secrets.GITHUB_HELM_TOKEN}" \
-            --password "${secrets.GITHUB_HELM_TOKEN}" \
-          helm repo update
-          helm repo list
-          helm search repo Weknow-charts
+      # - name: Add repo
+      #   run: |
+      #     echo "helm repo add Weknow-charts"          
+      #     helm repo add Weknow-charts \
+      #       https://weknow-network.github.io/helm-private-repos/
+      #     helm repo update
+      #     helm repo list
+      #     helm search repo Weknow-charts
           
       - name: HELM upgrade
         run: |  
