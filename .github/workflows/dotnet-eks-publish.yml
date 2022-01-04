@@ -48,7 +48,7 @@ on:
         description: "the HELM version"
         required: false
         default: 3.7.1
-      project: # ./{project}/charts/Chart.yaml
+      project: 
         type: string
         description: "the name of the project directory"
         required: false
@@ -116,32 +116,32 @@ jobs:
         id: ns
         run: echo ::set-output name=value::$(echo "wk-${{ steps.full-name.outputs.value }}")
   
-      - name: Chart File
-        id: chart-file
-        run: |
-          if [ -z "${{ inputs.project }}" ]
-          then
-            echo ::set-output name=value::$(echo "$((find . -name "Chart.yaml" -print &) | head -n 1)") # assuming single chart
-          else
-            echo ::set-output name=value::$(echo "./${{ inputs.project }}/charts/Chart.yaml")
-          fi
-        shell: bash
+      # - name: Chart File
+      #   id: chart-file
+      #   run: |
+      #     if [ -z "${{ inputs.project }}" ]
+      #     then
+      #       echo ::set-output name=value::$(echo "$((find . -name "Chart.yaml" -print &) | head -n 1)") # assuming single chart
+      #     else
+      #       echo ::set-output name=value::$(echo "./${{ inputs.project }}/charts/Chart.yaml")
+      #     fi
+      #   shell: bash
 
-      - name: Chart Folder
-        id: chart-folder
-        run: echo ::set-output name=value::$(echo "$(dirname ${{ steps.chart-file.outputs.value }})")
+      # - name: Chart Folder
+      #   id: chart-folder
+      #   run: echo ::set-output name=value::$(echo "$(dirname ${{ steps.chart-file.outputs.value }})")
 
-      - name: Chart Folder
-        id: vault-sa
-        run: echo ::set-output name=value::$(echo "${{ steps.ns.outputs.value }}-vault-sa" | tr '[:upper:]' '[:lower:]' )
+      # - name: Vault-SA
+      #   id: vault-sa
+      #   run: echo ::set-output name=value::$(echo "${{ steps.ns.outputs.value }}-vault-sa" | tr '[:upper:]' '[:lower:]' )
 
     outputs:
       short-name: ${{ steps.short-name.outputs.value }}
       full-name: ${{ steps.full-name.outputs.value }}
       ns: ${{ steps.ns.outputs.value }}
-      chart-file: ${{ steps.chart-file.outputs.value }}
-      chart-folder: ${{ steps.chart-folder.outputs.value }}
-      vault-sa: ${{ steps.vault-sa.outputs.value }}
+      # chart-file: ${{ steps.chart-file.outputs.value }}
+      # chart-folder: ${{ steps.chart-folder.outputs.value }}
+      # vault-sa: ${{ steps.vault-sa.outputs.value }}
 
   prepare-publish-to-eks:
     needs: var
@@ -209,8 +209,13 @@ jobs:
         # if: ${{ github.event.workflow_run.conclusion == 'failure' }}
         uses: weknow-network/weknow-throw-on-failure@v13    
 
-      - name: Checkout
-        uses: actions/checkout@v2
+      # https://github.com/actions/checkout
+      - name: Checkout Helm Repo
+        uses: actions/checkout@v2 
+        with:
+          repository: organization_name/repo_name
+          token: ${{ secrets.GITHUB_HELM_TOKEN }}
+          path: stable\net-micro-svc
 
 # ----------------------  SETUP + CREDENTIALS ----------------------------      
       - name: Configure AWS credentials
@@ -271,7 +276,7 @@ jobs:
           
       - name: HELM upgrade
         run: |  
-          helm upgrade ${{ needs.var.outputs.short-name }} weknow-charts/micro-svc \\
+          helm upgrade ${{ needs.var.outputs.short-name }} . \\
             --username "${secrets.GITHUB_HELM_TOKEN}" \
             --password "${secrets.GITHUB_HELM_TOKEN}" \
             --install --wait --timeout 180s -n ${{ needs.var.outputs.ns }}  \
@@ -283,4 +288,6 @@ jobs:
             --set ingress.name=${{ needs.var.outputs.full-name }} \
             --set probes.enabled=${{ inputs.probs-enabled }} \
             --set ${{ secrets.SECRETS_COMMON }},${{ secrets.SECRETS_OF_MODULE }}
+
+        # helm upgrade ${{ needs.var.outputs.short-name }} weknow-charts/micro-svc \\
   
