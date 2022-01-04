@@ -51,7 +51,7 @@ on:
       project: 
         type: string
         description: "the name of the project directory"
-        required: false
+        required: true
       repo-owner:
         type: string
         description: "the repo owner"
@@ -94,18 +94,13 @@ jobs:
         # if: ${{ github.event.workflow_run.conclusion == 'failure' }}
         uses: weknow-network/weknow-throw-on-failure@v13    
 
-      - name: Checkout
-        uses: actions/checkout@v2
+      # - name: Checkout
+      #   uses: actions/checkout@v2
   
       - name: Short Name
         id: short-name
         run: |
-          if [ -z "${{ inputs.project }}" ]
-          then
-            echo ::set-output name=value::$(echo "$GITHUB_REPOSITORY" | perl -p -e 's/weknow-network\/wk-(.*)/"$1"/eg' | tr '.' '-' | tr '[:upper:]' '[:lower:]')
-          else
             echo ::set-output name=value::$(echo "${{ inputs.project }}" | tr '.' '-' | tr '[:upper:]' '[:lower:]')
-          fi
         shell: bash
   
       - name: Full Name
@@ -119,12 +114,7 @@ jobs:
       # - name: Chart File
       #   id: chart-file
       #   run: |
-      #     if [ -z "${{ inputs.project }}" ]
-      #     then
-      #       echo ::set-output name=value::$(echo "$((find . -name "Chart.yaml" -print &) | head -n 1)") # assuming single chart
-      #     else
       #       echo ::set-output name=value::$(echo "./${{ inputs.project }}/charts/Chart.yaml")
-      #     fi
       #   shell: bash
 
       # - name: Chart Folder
@@ -153,8 +143,8 @@ jobs:
         # if: ${{ github.event.workflow_run.conclusion == 'failure' }}
         uses: weknow-network/weknow-throw-on-failure@v13    
 
-      - name: Checkout
-        uses: actions/checkout@v2
+      # - name: Checkout
+      #   uses: actions/checkout@v2
   
 # ----------------------  SETUP + CREDENTIALS ----------------------------      
       - name: Configure AWS credentials
@@ -213,7 +203,7 @@ jobs:
       - name: Checkout Helm Repo
         uses: actions/checkout@v2 
         with:
-          repository: organization_name/repo_name
+          repository: weknow-network/helm-private-repos
           token: ${{ secrets.GITHUB_HELM_TOKEN }}
           path: stable\net-micro-svc
 
