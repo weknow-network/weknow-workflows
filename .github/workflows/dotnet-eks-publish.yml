@@ -201,11 +201,10 @@ jobs:
 
       # https://github.com/actions/checkout
       - name: Checkout Helm Repo
-        uses: actions/checkout@v2 
-        secrets:
-          token: ${{ secrets.GITHUB_HELM_TOKEN }}
+        uses: actions/checkout@v2
         with:
           repository: weknow-network/helm-private-repos
+          token: ${{ secrets.GITHUB_HELM_TOKEN }} 
           path: stable\net-micro-svc
 
 # ----------------------  SETUP + CREDENTIALS ----------------------------      
