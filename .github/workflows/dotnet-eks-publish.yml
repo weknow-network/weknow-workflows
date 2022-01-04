@@ -265,7 +265,7 @@ jobs:
           
       - name: HELM upgrade
         run: |  
-          helm upgrade ${{ needs.var.outputs.short-name }} weknow-charts/micro-svc \
+          helm upgrade ${{ needs.var.outputs.short-name }} weknow-charts/net-micro-svc \
             --install --wait --timeout 180s -n ${{ needs.var.outputs.ns }}  \
             --debug \
             --set fullnameOverride=${{ needs.var.outputs.short-name }} \
