@@ -104,7 +104,7 @@ jobs:
             --tag ${{ steps.full-image-path.outputs.value }} \
             --build-arg PROJECT=${{ inputs.project }} \
             --build-arg ENTRY_PREFIX=${{ inputs.assembly-prefix }} \
-            .
+            . "${{ inputs.assembly-prefix }}${{ inputs.project }}.dll"
         # run: docker build . --file ${{ steps.dockerfile.outputs.path }} --tag ${{ steps.full-image-path.outputs.value }}
   
       - name: Login to GitHub Package (${{ inputs.repo-owner }})
