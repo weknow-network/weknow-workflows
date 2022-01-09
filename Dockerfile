@@ -38,5 +38,5 @@ COPY --from=publish /app/publish .
 # RUN chown -R microuser:microuser /app
 # USER microuser
 ENV entry_point $ENTRY_PREFIX$PROJECT.dll
-RUN ECHO $entry_point
+RUN echo $entry_point
 ENTRYPOINT dotnet $entry_point
