@@ -77,6 +77,10 @@ jobs:
       - id: get-version
         uses: weknow-network/get-dotnet-version-action@v2
 
+      - name: Full image path
+        id: full-image-path
+        run: echo ::set-output name=value::${{ env.BASE_PATH }}${{ steps.image.outputs.value }}:${{ steps.get-version.outputs.version }}
+
       - uses: actions/checkout@v2 # needed for Dockerfile
         with:
          repository: weknow-network/weknow-workflows
@@ -86,10 +90,6 @@ jobs:
         run: |
           echo $(ls -at ./docker-file)
         shell: bash
-
-      - name: Full image path
-        id: full-image-path
-        run: echo ::set-output name=value::${{ env.BASE_PATH }}${{ steps.image.outputs.value }}:${{ steps.get-version.outputs.version }}
         
       # - name: Get DockerFile path
       #   id: dockerfile
