@@ -1,17 +1,14 @@
-# docker build . -t sampel-vuild --build-arg PROJECT=Demo.Apis --build-arg ENTRY_PREFIX=Weknow.Backend.
-
 FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
 ARG PROJECT
 ARG ENTRY_PREFIX
-
 WORKDIR /app
 EXPOSE 80
 
-RUN apt update && \
-    apt install -y curl && \
-    curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl && \
-    chmod +x ./kubectl && \
-    mv ./kubectl /usr/local/bin/kubectl
+# RUN apt update && \
+#       apt install -y curl && \
+#       curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl && \
+#       chmod +x ./kubectl && \
+#       mv ./kubectl /usr/local/bin/kubectl
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 ARG PROJECT
@@ -22,8 +19,8 @@ COPY ["./", "/src"]
 RUN dotnet restore "$PROJECT/$PROJECT.csproj" --configfile "./nuget.config"
 COPY . .
 
-RUN dotnet build "$PROJECT.csproj" -c Rel
-WORKDIR "/src/$PROJECT"ease -o /app/build
+WORKDIR "/src/$PROJECT"
+RUN dotnet build "$PROJECT.csproj" -c Release -o /app/build
 
 FROM build AS publish
 ARG PROJECT
