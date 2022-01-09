@@ -48,10 +48,10 @@ jobs:
 
       # https://github.com/actions/checkout
       - uses: actions/checkout@v2 # needed for get version
-
-      - uses: actions/checkout@v2 # needed for Dockerfile
-        with:
-         repository: weknow-network/weknow-workflows
+     
+      - name: ls
+        run: |
+          echo ls
      
       # - name: Short Name
       #   id: short-image-name
@@ -68,9 +68,16 @@ jobs:
         run: echo ::set-output name=value::$(echo "${{ steps.short-image-name.outputs.value }}") 
         shell: bash
 
-     
       - id: get-version
         uses: weknow-network/get-dotnet-version-action@v2
+
+      - uses: actions/checkout@v2 # needed for Dockerfile
+        with:
+         repository: weknow-network/weknow-workflows
+     
+      - name: ls
+        run: |
+          echo ls
 
       - name: Full image path
         id: full-image-path
@@ -84,7 +91,7 @@ jobs:
   
       - name: Build the Docker image
         run: docker build . --tag ${{ steps.full-image-path.outputs.value }} --build-arg $PROJECT=${{ inputs.project }}
-        # run: docker build . --file ${{ steps.dockerfile.outputs.path }} --tag ${{ steps.full-image-path.outputs.value }} --build-arg $PROJECT=${{ inputs.project }}
+        # run: docker build . --file ${{ steps.dockerfile.outputs.path }} --tag ${{ steps.full-image-path.outputs.value }}
   
       - name: Login to GitHub Package (${{ inputs.repo-owner }})
         run: docker login ghcr.io -u ${{ inputs.repo-owner }} -p ${{ secrets.UPLOAD_PACKAGE_LOCAL }} 
