@@ -25,10 +25,11 @@ on:
         type: string
         description: "the name of the project directory"
         required: false
-      entry-point:
+      assembly-prefix:
         type: string
-        description: "the name of the assembly entry-point Weknow.Backend.Project.dll"
-        required: true
+        description: "the name of the assembly prefix prefix.project.dll"
+        required: false
+        default: Weknow.Backend.
 
     secrets:
       UPLOAD_PACKAGE_LOCAL:
@@ -102,7 +103,7 @@ jobs:
             -f ./docker-file/Dockerfile \
             --tag ${{ steps.full-image-path.outputs.value }} \
             --build-arg PROJECT=${{ inputs.project }} \
-            --build-arg ENTRY_POINT=${{ inputs.entry-point }} \
+            --build-arg ENTRY_POINT=${{ inputs.assembly-prefix }} \
             .
         # run: docker build . --file ${{ steps.dockerfile.outputs.path }} --tag ${{ steps.full-image-path.outputs.value }}
   
