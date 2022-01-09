@@ -103,7 +103,7 @@ jobs:
             -f ./docker-file/Dockerfile \
             --tag ${{ steps.full-image-path.outputs.value }} \
             --build-arg PROJECT=${{ inputs.project }} \
-            --build-arg ENTRY_POINT=${{ inputs.assembly-prefix }} \
+            --build-arg ENTRY_PREFIX=${{ inputs.assembly-prefix }} \
             .
         # run: docker build . --file ${{ steps.dockerfile.outputs.path }} --tag ${{ steps.full-image-path.outputs.value }}
   
@@ -112,4 +112,3 @@ jobs:
   
       - name: push to  GitHub Package
         run: docker push ${{ steps.full-image-path.outputs.value }}
-  
