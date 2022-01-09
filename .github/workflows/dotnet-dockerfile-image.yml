@@ -25,11 +25,10 @@ on:
         type: string
         description: "the name of the project directory"
         required: false
-      assembly-prefix:
+      entry-point:
         type: string
-        description: "the name of the assembly prefix prefix.project.dll"
-        required: false
-        default: Weknow.Backend.
+        description: "the name of the assembly entry-point Weknow.Backend.Project.dll"
+        required: true
 
     secrets:
       UPLOAD_PACKAGE_LOCAL:
@@ -103,8 +102,8 @@ jobs:
             -f ./docker-file/Dockerfile \
             --tag ${{ steps.full-image-path.outputs.value }} \
             --build-arg PROJECT=${{ inputs.project }} \
-            --build-arg ENTRY_PREFIX=${{ inputs.assembly-prefix }} \
-            . "${{ inputs.assembly-prefix }}${{ inputs.project }}.dll"
+            --build-arg ENTRY_POINT=${{ inputs.entry-point }} \
+            .
         # run: docker build . --file ${{ steps.dockerfile.outputs.path }} --tag ${{ steps.full-image-path.outputs.value }}
   
       - name: Login to GitHub Package (${{ inputs.repo-owner }})
