@@ -48,6 +48,10 @@ jobs:
 
       # https://github.com/actions/checkout
       - uses: actions/checkout@v2 # needed for get version
+
+      - uses: actions/checkout@v2 # needed for Dockerfile
+        with:
+         repository: weknow-network/weknow-workflows
      
       # - name: Short Name
       #   id: short-image-name
@@ -72,14 +76,15 @@ jobs:
         id: full-image-path
         run: echo ::set-output name=value::${{ env.BASE_PATH }}${{ steps.image.outputs.value }}:${{ steps.get-version.outputs.version }}
         
-      - name: Get DockerFile path
-        id: dockerfile
-        run: |
-            echo ::set-output name=path::$(echo "./${{ inputs.project }}/Dockerfile")
-        shell: bash
+      # - name: Get DockerFile path
+      #   id: dockerfile
+      #   run: |
+      #       echo ::set-output name=path::$(echo "./${{ inputs.project }}/Dockerfile")
+      #   shell: bash
   
       - name: Build the Docker image
-        run: docker build . --file ${{ steps.dockerfile.outputs.path }} --tag ${{ steps.full-image-path.outputs.value }}
+        run: docker build . --tag ${{ steps.full-image-path.outputs.value }} --build-arg $PROJECT=${{ inputs.project }}
+        # run: docker build . --file ${{ steps.dockerfile.outputs.path }} --tag ${{ steps.full-image-path.outputs.value }} --build-arg $PROJECT=${{ inputs.project }}
   
       - name: Login to GitHub Package (${{ inputs.repo-owner }})
         run: docker login ghcr.io -u ${{ inputs.repo-owner }} -p ${{ secrets.UPLOAD_PACKAGE_LOCAL }} 
