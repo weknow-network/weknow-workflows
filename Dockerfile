@@ -36,4 +36,5 @@ COPY --from=publish /app/publish .
 # RUN chown -R microuser:microuser /app
 # USER microuser
 RUN ECHO $ENTRY_PREFIX, $PROJECT, "$ENTRY_PREFIX$PROJECT.dll"
-ENTRYPOINT ["dotnet", "$ENTRY_PREFIX$PROJECT.dll"]
+ENTRYPOINT ["dotnet"]
+CMD [$ENTRY_PREFIX$PROJECT.dll]
