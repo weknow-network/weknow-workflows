@@ -80,6 +80,8 @@ jobs:
       - uses: actions/checkout@v2 # needed for Dockerfile
         with:
          repository: weknow-network/weknow-workflows
+         ref: ${{ github.ref_name }}
+         path: docker
      
       - name: ls
         run: |
@@ -99,6 +101,7 @@ jobs:
       - name: Build the Docker image
         run: |
           docker build \
+            -f ./docker/Dockerfile \
             --tag ${{ steps.full-image-path.outputs.value }} \
             --build-arg PROJECT=${{ inputs.project }} \
             --build-arg ENTRY_PREFIX=${{ inputs.assembly-prefix }} \
