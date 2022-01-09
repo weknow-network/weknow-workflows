@@ -1,4 +1,4 @@
-# docker build . -t sampel-vuild --build-arg $PROJECT=Demo.Apis --build-arg OTHER_ARG=whatever
+# docker build . -t sampel-vuild --build-arg PROJECT=Demo.Apis --build-arg ENTRY_PREFIX=Weknow.Backend.
 
 FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
 
@@ -30,4 +30,4 @@ WORKDIR /app
 COPY --from=publish /app/publish .
 # RUN chown -R microuser:microuser /app
 # USER microuser
-ENTRYPOINT ["dotnet", "Weknow.Backend.$PROJECT.dll"]
+ENTRYPOINT ["dotnet", "$ENTRY_PREFIX$PROJECT.dll"]
