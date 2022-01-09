@@ -56,7 +56,7 @@ jobs:
      
       - name: ls
         run: |
-          echo $(ls -lt)
+          echo $(ls)
         shell: bash
      
       # - name: Short Name
@@ -85,7 +85,7 @@ jobs:
      
       - name: ls
         run: |
-          echo $(ls -lt)
+          echo $(ls -at ./docker)
         shell: bash
 
       - name: Full image path
