@@ -57,6 +57,7 @@ jobs:
       - name: ls
         run: |
           echo $(ls -lt)
+        shell: bash
      
       # - name: Short Name
       #   id: short-image-name
@@ -83,6 +84,7 @@ jobs:
       - name: ls
         run: |
           echo $(ls -lt)
+        shell: bash
 
       - name: Full image path
         id: full-image-path
@@ -97,9 +99,9 @@ jobs:
       - name: Build the Docker image
         run: |
           docker build \
-            --tag ${{ steps.full-image-path.outputs.value }} 
-            --build-arg PROJECT=${{ inputs.project }} 
-            --build-arg ENTRY_PREFIX=${{ inputs.assembly-prefix }} 
+            --tag ${{ steps.full-image-path.outputs.value }} \
+            --build-arg PROJECT=${{ inputs.project }} \
+            --build-arg ENTRY_PREFIX=${{ inputs.assembly-prefix }} \
             .
         # run: docker build . --file ${{ steps.dockerfile.outputs.path }} --tag ${{ steps.full-image-path.outputs.value }}
   
