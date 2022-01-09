@@ -1,6 +1,7 @@
 FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
 ARG PROJECT
 ARG ENTRY_PREFIX
+echo $($ENTRY_PREFIX)
 
 WORKDIR /app
 EXPOSE 80
@@ -38,5 +39,5 @@ COPY --from=publish /app/publish .
 # RUN chown -R microuser:microuser /app
 # USER microuser
 ENV entry_point $ENTRY_PREFIX$PROJECT.dll
-RUN echo $($entry_point)
+echo $($entry_point)
 ENTRYPOINT dotnet $entry_point
