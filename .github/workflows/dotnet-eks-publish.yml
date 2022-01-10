@@ -114,7 +114,7 @@ jobs:
       - name: Ingress host name
         id: key
         run: |
-          if [ -z "${{ inputs.ingress }}" ]
+          if [ -z "${{ inputs.key }}" ]
           then
             echo ::set-output name=value::$(echo "${{ steps.full-name.outputs.value }}")
           else
