@@ -16,15 +16,8 @@ on:
         description: "NPM access token."
         required: true  
 
-jobs:
-  version_increment:
-    name: Increment Version
-    uses: weknow-network/weknow-workflows/.github/workflows/js-increment-version.yml@release/2022-01-09
-    with:
-      path: ${{ inputs.path }}
-    
+jobs:    
   build:
-    needs: version_increment
     name: CI
     runs-on: ubuntu-latest
     strategy:
