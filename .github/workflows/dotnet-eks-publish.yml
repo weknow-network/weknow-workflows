@@ -68,7 +68,7 @@ on:
         type: string
         description: "kubectl version"
         required: false
-        default: 'latest'
+        default: 'v1.18.5'
 
     secrets:
       EKS_ACCESS_KEY_ID:
