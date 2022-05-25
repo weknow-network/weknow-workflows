@@ -265,7 +265,7 @@ jobs:
   
       - name: docker registry secret
         run: |  
-          if [[ $(kubectl get secrets -n=${{ needs.var.outputs.ns }} | grep -E '(^|\s)${{ inputs.docker-registry-secret }}($|\s)') ]]; then
+          if [[ $(kubectl get secrets -n=${{ needs.var.outputs.ns }}  --field-selector=metadata.name=${{ inputs.docker-registry-secret }} --ignore-not-found) ]]; then
             echo "Secret '${{ inputs.docker-registry-secret }}' already exists"
           else
             echo "Create a secret '${{ inputs.docker-registry-secret }}' (used within the HELM chart)"
