@@ -265,7 +265,7 @@ jobs:
   
       - name: docker registry secret
         run: |  
-          if [ -z " $(kubectl get secrets -n=${{ needs.var.outputs.ns }}  --field-selector=metadata.name=${{ inputs.docker-registry-secret }} --ignore-not-found) ]; then
+          if [ -z $(kubectl get secrets -n=${{ needs.var.outputs.ns }}  --field-selector=metadata.name=${{ inputs.docker-registry-secret }} --ignore-not-found) ]; then
             echo "Create a secret '${{ inputs.docker-registry-secret }}' (used within the HELM chart)"
             kubectl create secret docker-registry ${{ inputs.docker-registry-secret }} \
              --docker-server=https://ghcr.io \
