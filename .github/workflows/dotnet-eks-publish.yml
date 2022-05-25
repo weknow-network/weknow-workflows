@@ -276,6 +276,7 @@ jobs:
              -n=${{ needs.var.outputs.ns }} \
              -o yaml
           fi
+        shell: bash
           
       - id: get-version  # use it with ${{ steps.get-version.outputs.version }}
         uses: weknow-network/get-dotnet-version-action@v2           
