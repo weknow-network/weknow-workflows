@@ -265,9 +265,7 @@ jobs:
   
       - name: docker registry secret
         run: |  
-          if [[ $(kubectl get secrets -n=${{ needs.var.outputs.ns }}  --field-selector=metadata.name=${{ inputs.docker-registry-secret }} --ignore-not-found) ]]; then
-            echo "Secret '${{ inputs.docker-registry-secret }}' already exists"
-          else
+          if [ -z " $(kubectl get secrets -n=${{ needs.var.outputs.ns }}  --field-selector=metadata.name=${{ inputs.docker-registry-secret }} --ignore-not-found) ]; then
             echo "Create a secret '${{ inputs.docker-registry-secret }}' (used within the HELM chart)"
             kubectl create secret docker-registry ${{ inputs.docker-registry-secret }} \
              --docker-server=https://ghcr.io \
@@ -275,6 +273,8 @@ jobs:
              --docker-password=${{ secrets.READ_PACKAGES_LOCAL }} \
              -n=${{ needs.var.outputs.ns }} \
              -o yaml
+          else
+            echo "Secret '${{ inputs.docker-registry-secret }}' already exists"
           fi
         shell: bash
           
