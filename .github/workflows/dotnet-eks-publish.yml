@@ -183,10 +183,10 @@ jobs:
         #   version: ${{ inputs.kubectl-version }}
 
       - name: Kubectl version
-        run: kubectl version
+        run: kubectl version || true
 
       - name: Kubectl ns
-        run: kubectl ns  || true
+        run: kubectl ns || true
         shell: bash
 
       - id: install-aws-cli
