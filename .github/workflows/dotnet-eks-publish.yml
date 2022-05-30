@@ -208,15 +208,15 @@ jobs:
             echo "namespace exists"
           else
             echo "Create a new namespace '${{ needs.var.outputs.ns }}'"
-            kubectl create namespace ${{ needs.var.outputs.ns }}
+            echo $(kubectl create namespace ${{ needs.var.outputs.ns }})
           
             if [[ $(kubectl -n ${{ needs.var.outputs.ns }} get secret | grep -E '(^|\s)${{ inputs.ingress-tls-secret }}($|\s)') ]]; then
                echo "Secret '${{ inputs.ingress-tls-secret }}' in the namespace '${{ needs.var.outputs.ns }}' already exists"
             elif [[ $(kubectl -n default get secret | grep -E '(^|\s)${{ inputs.ingress-tls-secret }}($|\s)') ]]; then
                 echo "Import '${{ inputs.ingress-tls-secret }}' private key for SSL certificate from the '${{ inputs.ingress-tls-secret-ns }}' namespace"
-                kubectl get secret ${{ inputs.ingress-tls-secret }} -n ${{ inputs.ingress-tls-secret-ns }} -o yaml | \
+                echo $(kubectl get secret ${{ inputs.ingress-tls-secret }} -n ${{ inputs.ingress-tls-secret-ns }} -o yaml | \
                 sed 's/namespace: ${{ inputs.ingress-tls-secret-ns }}/namespace: ${{ needs.var.outputs.ns }}/' | \
-                kubectl create -f -
+                kubectl create -f -)
             fi
           fi
 
