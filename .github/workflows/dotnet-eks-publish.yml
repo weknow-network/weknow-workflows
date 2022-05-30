@@ -202,15 +202,15 @@ jobs:
         run: 
           curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" 
         shell: bash
-      - name: Update aws cli version
+      - name: install unzip
         run: 
           sudo apt install unzip
         shell: bash
-      - name: Update aws cli version
+      - name: unzip aws cli
         run: 
           unzip awscliv2.zip 
         shell: bash
-      - name: Update aws cli version
+      - name: upgrade aws cli
         run: 
           sudo ./aws/install --update
         shell: bash
@@ -283,8 +283,18 @@ jobs:
           
       - name: Update aws cli version
         run: 
-          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
-          unzip awscliv2.zip \
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" 
+        shell: bash
+      - name: install unzip
+        run: 
+          sudo apt install unzip
+        shell: bash
+      - name: unzip aws cli
+        run: 
+          unzip awscliv2.zip 
+        shell: bash
+      - name: upgrade aws cli
+        run: 
           sudo ./aws/install --update
         shell: bash
           
