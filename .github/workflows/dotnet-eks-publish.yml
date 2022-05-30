@@ -179,8 +179,8 @@ jobs:
   
       - name: Kubectl tool installer
         uses: Azure/setup-kubectl@v2.0
-        with: 
-          version: ${{ inputs.kubectl-version }}
+        # with: 
+        #   version: ${{ inputs.kubectl-version }}
 
       - name: Echo Kubectl version
         run: echo "Secret '${{ inputs.kubectl-version }}'
