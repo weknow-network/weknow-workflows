@@ -64,13 +64,13 @@ on:
         type: string
         description: "the name of github package secret (which allow to fetch the image)"
         required: true
-      kubectl-version:
-        type: string
-        description: "kubectl version"
-        required: false
-        # default: "v1.23.6"
-        # default: "v1.17.17"
-        # https://www.gitclear.com/open_repos/kubernetes/kubernetes/releases
+      # kubectl-version:
+      #   type: string
+      #   description: "kubectl version"
+      #   required: false
+      #   default: "v1.23.6"
+      #   default: "v1.17.17"
+      #   https://www.gitclear.com/open_repos/kubernetes/kubernetes/releases
 
     secrets:
       EKS_ACCESS_KEY_ID:
@@ -186,9 +186,9 @@ jobs:
         run: kubectl version || true
 
       - name: Kubectl ns
-        run: kubectl get ns || true
+        run: kubectl ns || true
         shell: bash
-
+      
       - id: install-aws-cli
         uses: unfor19/install-aws-cli-action@v1
         with:
@@ -204,7 +204,7 @@ jobs:
 # ----------------------  CREATE NAMESPACE ----------------------------
       - name: Create Namespace (and import TLS secret)
         run: |
-          if [ -z $(kubectl get namespaces | grep -E '(^|\s)${{ needs.var.outputs.ns }}($|\s)' --ignore-not-found) ]; then
+          if [[ $(kubectl get namespaces | grep -E '(^|\s)${{ needs.var.outputs.ns }}($|\s)') ]]; then	
             echo "namespace exists"
           else
             echo "Create a new namespace '${{ needs.var.outputs.ns }}'"
@@ -219,7 +219,6 @@ jobs:
                 kubectl create -f -
             fi
           fi
-        shell: bash
 
 # ----------------------  HELM ----------------------------
   publish-to-eks:
@@ -252,7 +251,9 @@ jobs:
           aws-region: ${{ inputs.eks-region }}
   
       - name: Kubectl tool installer
-        uses: Azure/setup-kubectl@v1
+        uses: Azure/setup-kubectl@v2.0
+        # with: 
+        #   version: ${{ inputs.kubectl-version }}
       
       - id: install-aws-cli
         uses: unfor19/install-aws-cli-action@v1
@@ -275,7 +276,9 @@ jobs:
   
       - name: docker registry secret
         run: |  
-          if [ -z $(kubectl get secrets -n=${{ needs.var.outputs.ns }}  --field-selector=metadata.name=${{ inputs.docker-registry-secret }} --ignore-not-found) ]; then
+          if [[ $(kubectl get secrets -n=${{ needs.var.outputs.ns }} | grep -E '(^|\s)${{ inputs.docker-registry-secret }}($|\s)') ]]; then
+            echo "Secret '${{ inputs.docker-registry-secret }}' already exists"
+          else
             echo "Create a secret '${{ inputs.docker-registry-secret }}' (used within the HELM chart)"
             kubectl create secret docker-registry ${{ inputs.docker-registry-secret }} \
              --docker-server=https://ghcr.io \
@@ -283,10 +286,7 @@ jobs:
              --docker-password=${{ secrets.READ_PACKAGES_LOCAL }} \
              -n=${{ needs.var.outputs.ns }} \
              -o yaml
-          else
-            echo "Secret '${{ inputs.docker-registry-secret }}' already exists"
           fi
-        shell: bash
           
       - id: get-version  # use it with ${{ steps.get-version.outputs.version }}
         uses: weknow-network/get-dotnet-version-action@v2           
