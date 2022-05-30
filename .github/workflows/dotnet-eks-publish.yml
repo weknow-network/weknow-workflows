@@ -200,8 +200,18 @@ jobs:
           
       - name: Update aws cli version
         run: 
-          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
-          unzip awscliv2.zip \
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" 
+        shell: bash
+      - name: Update aws cli version
+        run: 
+          sudo apt install unzip
+        shell: bash
+      - name: Update aws cli version
+        run: 
+          unzip awscliv2.zip 
+        shell: bash
+      - name: Update aws cli version
+        run: 
           sudo ./aws/install --update
         shell: bash
 
