@@ -68,7 +68,7 @@ on:
         type: string
         description: "kubectl version"
         required: false
-        default: "v1.24.1"
+        # default: "v1.23.6"
         # default: "v1.17.17"
         # https://www.gitclear.com/open_repos/kubernetes/kubernetes/releases
 
