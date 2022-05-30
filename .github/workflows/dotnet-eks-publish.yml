@@ -182,8 +182,11 @@ jobs:
         # with: 
         #   version: ${{ inputs.kubectl-version }}
 
-      # - name: Echo Kubectl version
-      #   run: echo "Secret '${{ inputs.kubectl-version }}'"
+      - name: Kubectl version
+        run: kubectl version
+
+      - name: Kubectl ns
+        run: kubectl ns
 
       - id: install-aws-cli
         uses: unfor19/install-aws-cli-action@v1
