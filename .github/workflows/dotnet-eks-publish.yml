@@ -68,7 +68,8 @@ on:
         type: string
         description: "kubectl version"
         required: false
-        default: 'v1.17.17'
+        default: latests
+        # default: 'v1.17.17'
 
     secrets:
       EKS_ACCESS_KEY_ID:
@@ -179,7 +180,10 @@ jobs:
         uses: Azure/setup-kubectl@v2.0
         with: 
           version: ${{ inputs.kubectl-version }}
-      
+
+      - name: Echo Kubectl version
+        run: echo "Secret '${{ inputs.kubectl-version }}'
+
       - id: install-aws-cli
         uses: unfor19/install-aws-cli-action@v1
         with:
