@@ -204,7 +204,7 @@ jobs:
 # ----------------------  CREATE NAMESPACE ----------------------------
       - name: Create Namespace (and import TLS secret)
         run: |
-          if [[ $(kubectl get namespaces | grep -E '(^|\s)${{ needs.var.outputs.ns }}($|\s)') ]]; then	
+          if [ -z $(kubectl get namespaces | grep -E '(^|\s)${{ needs.var.outputs.ns }}($|\s)' --ignore-not-found) ]; then
             echo "namespace exists"
           else
             echo "Create a new namespace '${{ needs.var.outputs.ns }}'"
@@ -219,6 +219,7 @@ jobs:
                 kubectl create -f -
             fi
           fi
+        shell: bash
 
 # ----------------------  HELM ----------------------------
   publish-to-eks:
