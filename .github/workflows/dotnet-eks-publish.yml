@@ -198,6 +198,13 @@ jobs:
           aws-secret-access-key: ${{ secrets.EKS_ACCESS_KEY_SECRET }}
           aws-region: ${{ inputs.eks-region }}        
           
+      - name: Update aws cli version
+        run: 
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
+          unzip awscliv2.zip
+          sudo ./aws/install --update
+        shell: bash
+
       - run: aws eks --region ${{ inputs.eks-region }} update-kubeconfig --name ${{ inputs.eks-cluster-name }} --alias ${{ inputs.eks-cluster-name }}
         shell: bash
   
@@ -264,7 +271,8 @@ jobs:
           aws-secret-access-key: ${{ secrets.EKS_ACCESS_KEY_SECRET }}
           aws-region: ${{ inputs.eks-region }}        
           
-      - run: 
+      - name: Update aws cli version
+        run: 
           curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
           unzip awscliv2.zip
           sudo ./aws/install --update
