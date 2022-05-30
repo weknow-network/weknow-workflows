@@ -186,7 +186,8 @@ jobs:
         run: kubectl version
 
       - name: Kubectl ns
-        run: kubectl ns
+        run: kubectl ns  || true
+        shell: bash
 
       - id: install-aws-cli
         uses: unfor19/install-aws-cli-action@v1
