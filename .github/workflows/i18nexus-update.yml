@@ -15,7 +15,7 @@ on:
 jobs:
   version_increment:
     # if: ${{ github.event.workflow_run.conclusion != 'failure' }}
-    name: Increment Version
+    name: Update content
     runs-on: ubuntu-latest    
   
     steps:
@@ -24,6 +24,11 @@ jobs:
         uses: weknow-network/weknow-throw-on-failure@v13    
   
       - uses: actions/checkout@v2
+    
+      - name: Install i18nexus
+        run: |
+          npm install i18nexus-cli -g
+        # shell: bash
     
       - name: UPDATE
         run: |
