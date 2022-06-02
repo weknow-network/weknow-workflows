@@ -38,16 +38,7 @@ jobs:
     - uses: stefanzweifel/git-auto-commit-action@v4
       with:
         commit_message: i18Nexus Update
-        # Optional. Options used by `git-commit`.
-        # See https://git-scm.com/docs/git-commit#_options
         commit_options: '--no-verify'
     
-      # - name: Commit changes
-      #   uses: EndBug/add-and-commit@v7
-      #   with:
-      #     author_name: CI/CD
-      #     author_email: ${{ inputs.author-email }}
-      #     message: "i18Nexus Update"
-      #     add: .
-      #     push: true
+      
     
