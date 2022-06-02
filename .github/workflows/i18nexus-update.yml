@@ -35,10 +35,10 @@ jobs:
           i18nexus pull -k ${{ secrets.API_KEY }} -p "./apps/wk-apps-site"
         # shell: bash
 
-    - uses: stefanzweifel/git-auto-commit-action@v4
-      with:
-        commit_message: i18Nexus Update
-        commit_options: '--no-verify'
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: i18Nexus Update
+          commit_options: '--no-verify'
     
       
     
