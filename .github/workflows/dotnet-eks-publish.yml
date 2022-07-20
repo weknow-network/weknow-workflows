@@ -64,13 +64,13 @@ on:
         type: string
         description: "the name of github package secret (which allow to fetch the image)"
         required: true
-      # kubectl-version:
-      #   type: string
-      #   description: "kubectl version"
-      #   required: false
-      #   default: "v1.23.6"
-      #   default: "v1.17.17"
-      #   https://www.gitclear.com/open_repos/kubernetes/kubernetes/releases
+      kubectl-version:
+        type: string
+        description: "kubectl version"
+        required: false
+        # default: "v1.23.6"
+        default: "v1.18.5"
+        # https://www.gitclear.com/open_repos/kubernetes/kubernetes/releases
 
     secrets:
       EKS_ACCESS_KEY_ID:
@@ -179,8 +179,8 @@ jobs:
   
       - name: Kubectl tool installer
         uses: Azure/setup-kubectl@v2.0
-        # with: 
-        #   version: ${{ inputs.kubectl-version }}
+        with: 
+          version: ${{ inputs.kubectl-version }}
 
       - name: Kubectl version
         run: kubectl version || true
