@@ -185,8 +185,8 @@ jobs:
       - name: Kubectl version
         run: kubectl version || true
 
-      - name: Kubectl ns
-        run: kubectl ns || true
+      - name: Kubectl get ns
+        run: kubectl get ns || true
         shell: bash
       
       - id: install-aws-cli
