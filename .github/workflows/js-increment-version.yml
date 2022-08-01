@@ -6,6 +6,10 @@ name: Increment Version (Directory.Build.props)
 # env:               https://docs.github.com/en/actions/learn-github-actions/environment-variables
 # reusable workflow: https://docs.github.com/en/actions/learn-github-actions/reusing-workflows#access-to-reusable-workflows
 
+# samples
+#   find . -name package.json -o -name lerna.json | grep -v '^./node_modules/' | grep -v '^./.vscode' | grep -v '^./docs' | grep -v '^./nx'
+#   find . -regextype posix-extended -iregex '.*(package|lerna)\.json' | grep -v '^./node_modules/' | grep -v '^./.vscode' | grep -v '^./docs' | grep -v '^./nx'
+
 on: 
   workflow_call:
     inputs:
