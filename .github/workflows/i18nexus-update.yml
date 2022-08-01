@@ -35,10 +35,18 @@ jobs:
           i18nexus pull -k ${{ secrets.API_KEY }} -p "./apps/wk-apps-site/public/locales"
         # shell: bash
 
-      - uses: stefanzweifel/git-auto-commit-action@v4
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: i18Nexus Update
+          commit_user_name: CI/CD
+          commit_user_email: ${{ inputs.author-email }}
+          commit_message: "i18Nexus Update"
           commit_options: '--no-verify'
+          push_options: '--no-verify'
+          # add_options: '-u'
+          # skip_dirty_check: true
+          # skip_fetch: true  
+          # skip_checkout: true
     
       
     
