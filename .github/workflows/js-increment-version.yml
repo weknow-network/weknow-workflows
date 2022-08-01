@@ -15,7 +15,7 @@ on:
     inputs:
       criteria: # todo: [bnaya 2022-08-01] get array 
         type: string
-        description: "find criteria like [-name package.json -o -name lerna.json] or [-regextype posix-extended -iregex '.*(package|lerna)\\.json]"
+        description: "find criteria"
         required: false
         default: -name package.json -o -name lerna.json
       basePath: # todo: [bnaya 2022-08-01] get array 
