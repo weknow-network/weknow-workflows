@@ -13,12 +13,12 @@ name: Increment Version (Directory.Build.props)
 on: 
   workflow_call:
     inputs:
-      criteria: # todo: [bnaya 2022-08-01] get array 
+      criteria: 
         type: string
         description: "find criteria"
         required: false
         default: -name package.json -o -name lerna.json
-      basePath: # todo: [bnaya 2022-08-01] get array 
+      basePath:  
         type: string
         description: "base path for searching"
         required: false
