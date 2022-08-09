@@ -23,6 +23,11 @@ on:
         description: "base path for searching"
         required: false
         default: .
+      author-email:  
+        type: string
+        description: "Email for commit baseline updates"
+        required: false
+        default: ci@weknow.network
   
 jobs:
   version_increment:
