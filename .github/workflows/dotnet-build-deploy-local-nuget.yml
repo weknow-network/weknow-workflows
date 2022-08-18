@@ -63,8 +63,16 @@ jobs:
         run: dotnet test --filter Category=CI --configuration ${{ inputs.build-config }} --no-restore --no-build --verbosity normal -o out
         shell: bash      
   
-      - name: GitHub Package Registry Tool Install
-        run: dotnet tool install --global --verbosity minimal --no-cache gpr
+      # - name: GitHub Package Registry Tool Install
+      #   run: dotnet tool install --global --verbosity minimal --no-cache gpr
+
+      - uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: '6.0.x' # SDK Version to use.
+          source-url: https://nuget.pkg.github.com/weknow-network/index.json
+        env:
+          NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          
       - name: NuGet Push (repo = ${{ github.repository }}) 
         run: |
           gpr push --api-key ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --repository ${{ github.repository }} --retries 3 ./out/**/*.nupkg  || true
