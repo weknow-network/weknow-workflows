@@ -52,13 +52,14 @@ jobs:
           NUGET_AUTH_TOKEN: ${{ secrets.UPLOAD_PACKAGE_LOCAL }}
           # NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
   
-      - name: .NET Restore dependencies
+      - name:  NuGet Add github's private registry
         run: dotnet nuget add source --username bnayae --password ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/weknow-network/index.json"
         shell: bash
 
       - name: .NET Restore dependencies
         run: dotnet restore /property:Configuration=${{ inputs.build-config }} 
         shell: bash
+
       - name: .NET Build 
         run: dotnet build  --configuration ${{ inputs.build-config }} --no-restore -o out 
         # run: dotnet build  --configuration ${{ inputs.build-config }} --no-restore -o out -p:Version=${{ steps.get-version.outputs.version }}

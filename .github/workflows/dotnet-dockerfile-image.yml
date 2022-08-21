@@ -90,13 +90,11 @@ jobs:
         run: |
           echo $(ls -at ./docker-file)
         shell: bash
-        
-      # - name: Get DockerFile path
-      #   id: dockerfile
-      #   run: |
-      #       echo ::set-output name=path::$(echo "./${{ inputs.project }}/Dockerfile")
-      #   shell: bash
   
+      - name:  NuGet Add github's private registry
+        run: dotnet nuget add source --username bnayae --password ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/weknow-network/index.json"
+        shell: bash
+
       - name: Build the Docker image
         run: |
           docker build \
