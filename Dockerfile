@@ -1,8 +1,13 @@
 FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
 ARG PROJECT
 ARG ENTRY_PREFIX
+ARG NUGET_AUTH_TOKEN
+ARG NUGET_USER_NAME
+
 RUN echo PROJECT=$PROJECT
 RUN echo ENTRY_PREFIX=$ENTRY_PREFIX
+RUN echo NUGET_USER_NAME=$NUGET_USER_NAME
+RUN echo NUGET_AUTH_TOKEN=$NUGET_AUTH_TOKEN
 
 WORKDIR /app
 EXPOSE 80
@@ -16,6 +21,9 @@ EXPOSE 80
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 ARG PROJECT
 ARG ENTRY_PREFIX
+ARG NUGET_AUTH_TOKEN
+ARG NUGET_USER_NAME
+
 WORKDIR /src
 COPY ["./", "/src"]
 
@@ -37,8 +45,6 @@ RUN dotnet publish "$PROJECT.csproj" -c Release -o /app/publish
 FROM base AS final
 ARG PROJECT
 ARG ENTRY_PREFIX
-ARG NUGET_AUTH_TOKEN
-ARG NUGET_USER_NAME
 
 WORKDIR /app
 # RUN groupadd -r microuser && useradd -r -s /bin/false -g microuser microuser
