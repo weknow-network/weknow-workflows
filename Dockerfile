@@ -29,7 +29,7 @@ COPY ["./", "/src"]
 
 RUN rm nuget.config
 COPY ./gitlab-ci/nuget.config.template.xml /src/nuget.config
-RUN sed -i -e "s/USER/$NUGET_USER_NAME/g" -e "s/PW/$NUGET_AUTH_TOKEN/g" nuget.config
+RUN sed -i -e "s/USER/$NUGET_USER_NAME/g" -e "s/PW/$NUGET_AUTH_TOKEN/g" /src/nuget.config
 
 RUN dotnet restore "$PROJECT/$PROJECT.csproj" --configfile "/src/nuget.config"
 COPY . .
