@@ -19,7 +19,11 @@ ARG ENTRY_PREFIX
 WORKDIR /src
 COPY ["./", "/src"]
 
-RUN dotnet restore "$PROJECT/$PROJECT.csproj" --configfile "./nuget.config"
+RUN rm nuget.config
+COPY ./gitlab-ci/nuget.config.template.xml /src/nuget.config
+RUN sed -i -e "s/USER/$NUGET_USER_NAME/g" -e "s/PW/$NUGET_AUTH_TOKEN/g" nuget.config
+
+RUN dotnet restore "$PROJECT/$PROJECT.csproj" --configfile "/src/nuget.config"
 COPY . .
 
 WORKDIR "/src/$PROJECT"
@@ -41,10 +45,6 @@ WORKDIR /app
 COPY --from=publish /app/publish .
 # RUN chown -R microuser:microuser /app
 # USER microuser
-
-RUN rm nuget.config
-COPY ./gitlab-ci/nuget.config.template.xml ./nuget.config
-RUN sed -i -e "s/USER/$NUGET_USER_NAME/g" -e "s/PW/$NUGET_AUTH_TOKEN/g" nuget.config
 
 ENV entry_point $ENTRY_PREFIX$PROJECT.dll
 RUN echo $entry_point
