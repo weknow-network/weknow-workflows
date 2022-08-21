@@ -82,15 +82,16 @@ jobs:
         id: full-image-path
         run: echo ::set-output name=value::${{ env.BASE_PATH }}${{ steps.image.outputs.value }}:${{ steps.get-version.outputs.version }}
 
-      # - uses: actions/checkout@v2 # needed for Dockerfile
-      #   with:
-      #    repository: weknow-network/weknow-workflows
-      #    path: docker-file
+      - uses: actions/checkout@v2 # needed for Dockerfile
+        with:
+         repository: weknow-network/weknow-dockerfiles
+         ref: "2022-08-21"
+         path: docker-file
      
-      # - name: ls
-      #   run: |
-      #     echo $(ls -at ./docker-file)
-      #   shell: bash
+      - name: ls
+        run: |
+          echo $(ls -at ./docker-file)
+        shell: bash
   
       - name:  NuGet Add github's private registry
         run: dotnet nuget add source --username bnayae --password ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/weknow-network/index.json"
@@ -99,7 +100,7 @@ jobs:
       - name: Docker Build
         run: |
           docker build \
-            -f ./Dockerfile \
+            -f ./docker-file/dotnet/Dockerfile \
             --tag ${{ steps.full-image-path.outputs.value }} \
             --build-arg PROJECT=${{ inputs.project }} \
             --build-arg ENTRY_PREFIX=${{ inputs.assembly-prefix }} \
