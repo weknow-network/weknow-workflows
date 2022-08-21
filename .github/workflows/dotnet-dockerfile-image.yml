@@ -53,7 +53,7 @@ jobs:
         uses: weknow-network/weknow-throw-on-failure@v13    
 
       # https://github.com/actions/checkout
-      - uses: actions/checkout@v2 # needed for get version
+      - uses: actions/checkout@v3 # needed for get version
      
       - name: ls
         run: |
@@ -82,7 +82,7 @@ jobs:
         id: full-image-path
         run: echo ::set-output name=value::${{ env.BASE_PATH }}${{ steps.image.outputs.value }}:${{ steps.get-version.outputs.version }}
 
-      - uses: actions/checkout@v2 # needed for Dockerfile
+      - uses: actions/checkout@v3 # needed for Dockerfile
         with:
          repository: weknow-network/weknow-dockerfiles
          ref: "2022-08-21"

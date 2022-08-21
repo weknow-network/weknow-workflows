@@ -106,7 +106,7 @@ jobs:
         uses: weknow-network/weknow-throw-on-failure@v13    
 
       # - name: Checkout
-      #   uses: actions/checkout@v2
+      #   uses: actions/checkout@v3
   
       - name: Short Name
         id: short-name
@@ -167,7 +167,7 @@ jobs:
         uses: weknow-network/weknow-throw-on-failure@v13    
 
       # - name: Checkout
-      #   uses: actions/checkout@v2
+      #   uses: actions/checkout@v3
   
 # ----------------------  SETUP + CREDENTIALS ----------------------------      
       - name: Configure AWS credentials
@@ -250,14 +250,14 @@ jobs:
 
       # # https://github.com/actions/checkout
       # - name: Checkout Helm Repo
-      #   uses: actions/checkout@v2
+      #   uses: actions/checkout@v3
       #   with:
       #     repository: weknow-network/helm-private-repos
       #     token: ${{ secrets.GITHUB_HELM_TOKEN }}
       #     path: stable\net-micro-svc
 
       # https://github.com/actions/checkout
-      - uses: actions/checkout@v2 # needed for get version
+      - uses: actions/checkout@v3 # needed for get version
 
 # ----------------------  SETUP + CREDENTIALS ----------------------------      
       - name: Configure AWS credentials
