@@ -102,6 +102,8 @@ jobs:
             --tag ${{ steps.full-image-path.outputs.value }} \
             --build-arg PROJECT=${{ inputs.project }} \
             --build-arg ENTRY_PREFIX=${{ inputs.assembly-prefix }} \
+            --build-arg NUGET_USER_NAME=bnayae \
+            --build-arg NUGET_AUTH_TOKEN=${{ secrets.UPLOAD_PACKAGE_LOCAL }}  \
             .
         # run: docker build . --file ${{ steps.dockerfile.outputs.path }} --tag ${{ steps.full-image-path.outputs.value }}
   
