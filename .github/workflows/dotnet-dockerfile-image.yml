@@ -92,7 +92,7 @@ jobs:
      
       - name: ls
         run: |
-          echo $(ls -at ./docker-file)
+          echo $(ls -at ./docker-file/dotnet)
         shell: bash
   
       - name:  NuGet Add github's private registry
