@@ -164,9 +164,9 @@ jobs:
       - id: throw-on-failure  
         # if: ${{ github.event.workflow_run.conclusion == 'failure' }}
         uses: weknow-network/weknow-throw-on-failure@v13    
-
-      # - name: Checkout
-      #   uses: actions/checkout@v3
+      
+      - name: eco
+        run: echo ${{ inputs.eks-region }}
   
 # ----------------------  SETUP + CREDENTIALS ----------------------------      
       - name: Configure AWS credentials
