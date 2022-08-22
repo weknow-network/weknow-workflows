@@ -94,8 +94,8 @@ on:
       #   description: "token to the helm repo"
       #   required: true       
 
-    env:
-      eks-region: ${{ inputs.eks-region != null && inputs.eks-region || "wk-us-prod-eks" }}
+env:
+  eks-region: ${{ inputs.eks-region != null && inputs.eks-region || "wk-us-prod-eks" }}
 
 jobs:
   var:
