@@ -9,6 +9,16 @@ name: Publish to EKS
 on: 
   workflow_call:
     inputs:
+      eks-cluster-name:
+        type: string
+        description: "the cluster name"
+        required: false
+        default: wk-us-prod-eks
+      eks-region:
+        type: string
+        description: "the cluster region"
+        required: false
+        default: us-east-2
       organization:
         type: string
         description: "github organization / user of the repo"
@@ -47,14 +57,6 @@ on:
       ingress-tls-secret-ns:
         type: string
         description: "the namespace of the ingress tls"
-        required: true
-      eks-cluster-name:
-        type: string
-        description: "the cluster name"
-        required: true
-      eks-region:
-        type: string
-        description: "the cluster region"
         required: true
       repo-owner:
         type: string
@@ -105,9 +107,6 @@ jobs:
         # if: ${{ github.event.workflow_run.conclusion == 'failure' }}
         uses: weknow-network/weknow-throw-on-failure@v13    
 
-      # - name: Checkout
-      #   uses: actions/checkout@v3
-  
       - name: Short Name
         id: short-name
         run: |
