@@ -96,13 +96,7 @@ jobs:
       - name: modify nuget.config
         run: |
           sed -i -e "s/USER/bnayae/g" -e "s/PW/${{ secrets.UPLOAD_PACKAGE_LOCAL }}/g" ./docker-file/dotnet/nuget.config.template.xml 
-        shell: bash
-      - name: remove old nuget.config
-        run: |
           rm ./nuget.config 
-        shell: bash
-      - name: copy modified nuget.config
-        run: |
           COPY ./docker-file/dotnet/nuget.config.template.xml ./nuget.config
         shell: bash
 
