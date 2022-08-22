@@ -85,10 +85,10 @@ jobs:
       - uses: actions/checkout@v3 # needed for Dockerfile
         with:
          repository: weknow-network/weknow-dockerfiles
-         ref: release/2022-08-21
          path: docker-file
-         ssh-key: ${{ secrets.DOCKER_FILES_SSH_PRIVATE_KEY }}
-        #  token: ${{ secrets.GH_PAT }}
+         token: ${{ secrets.READ_DOCKER_FILES }}
+        #  ref: release/2022-08-21
+        #  ssh-key: ${{ secrets.DOCKER_FILES_SSH_PRIVATE_KEY }}
      
       - name: ls
         run: |
