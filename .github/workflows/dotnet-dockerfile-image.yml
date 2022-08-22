@@ -95,9 +95,9 @@ jobs:
           echo $(ls -at ./docker-file/dotnet)
         shell: bash
   
-      - name:  NuGet Add github's private registry
-        run: dotnet nuget add source --username bnayae --password ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/weknow-network/index.json"
-        shell: bash
+      # - name:  NuGet Add github's private registry
+      #   run: dotnet nuget add source --username bnayae --password ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/weknow-network/index.json"
+      #   shell: bash
 
       - name: Docker Build
         run: |
