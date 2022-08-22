@@ -86,9 +86,9 @@ jobs:
         with:
          repository: weknow-network/weknow-dockerfiles
          path: docker-file
-         token: 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
+         ssh-key: ${{ secrets.DOCKER_FILES_SSH_PRIVATE_KEY }}
+        #  token: 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
         #  ref: release/2022-08-21
-        #  ssh-key: ${{ secrets.DOCKER_FILES_SSH_PRIVATE_KEY }}
      
       - name: ls
         run: |
