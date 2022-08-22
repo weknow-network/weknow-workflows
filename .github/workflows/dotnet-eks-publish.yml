@@ -12,19 +12,19 @@ on:
       eks-cluster-name:
         type: string
         description: "the cluster name"
-        required: false
+        required: true
         # default: wk-us-prod-eks
       eks-region:
         type: string
         description: "the cluster region"
-        required: false
-        default: us-east-2
+        required: true
+        # default: us-east-2
       kubectl-version:
         type: string
         description: "kubectl version"
-        required: false
+        required: true
         # default: "v1.23.6"
-        default: "v1.18.5"
+        # default: "v1.18.5"
         # https://www.gitclear.com/open_repos/kubernetes/kubernetes/releases
       organization:
         type: string
@@ -92,10 +92,7 @@ on:
         required: false          
       # GITHUB_HELM_TOKEN:
       #   description: "token to the helm repo"
-      #   required: true       
-
-env:
-  eks-region: ${{ inputs.eks-region != null && inputs.eks-region || "wk-us-prod-eks" }}
+      #   required: true          
 
 jobs:
   var:
@@ -166,7 +163,7 @@ jobs:
         uses: weknow-network/weknow-throw-on-failure@v13    
       
       - name: eco
-        run: echo ${{ env.eks-region }}
+        run: echo ${{ inputs.eks-region }}
   
 # ----------------------  SETUP + CREDENTIALS ----------------------------      
       - name: Configure AWS credentials
@@ -174,7 +171,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.EKS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.EKS_ACCESS_KEY_SECRET }}
-          aws-region: ${{ env.eks-region }}
+          aws-region: ${{ inputs.eks-region }}
   
       - name: Kubectl tool installer
         uses: Azure/setup-kubectl@v2.0
@@ -195,7 +192,7 @@ jobs:
           verbose: false
           aws-access-key-id: ${{ secrets.EKS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.EKS_ACCESS_KEY_SECRET }}
-          aws-region: ${{ env.eks-region }}        
+          aws-region: ${{ inputs.eks-region }}        
           
       - name: Update aws cli version
         run: 
@@ -214,7 +211,7 @@ jobs:
           sudo ./aws/install --update
         shell: bash
 
-      - run: aws eks --region ${{ env.eks-region }} update-kubeconfig --name ${{ inputs.eks-cluster-name }} --alias ${{ inputs.eks-cluster-name }}
+      - run: aws eks --region ${{ inputs.eks-region }} update-kubeconfig --name ${{ inputs.eks-cluster-name }} --alias ${{ inputs.eks-cluster-name }}
         shell: bash
   
 # ----------------------  CREATE NAMESPACE ----------------------------
@@ -264,7 +261,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.EKS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.EKS_ACCESS_KEY_SECRET }}
-          aws-region: ${{ env.eks-region }}
+          aws-region: ${{ inputs.eks-region }}
   
       - name: Kubectl tool installer
         uses: Azure/setup-kubectl@v2.0
@@ -278,7 +275,7 @@ jobs:
           verbose: false
           aws-access-key-id: ${{ secrets.EKS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.EKS_ACCESS_KEY_SECRET }}
-          aws-region: ${{ env.eks-region }}        
+          aws-region: ${{ inputs.eks-region }}        
           
       - name: Update aws cli version
         run: 
@@ -297,7 +294,7 @@ jobs:
           sudo ./aws/install --update
         shell: bash
           
-      - run: aws eks --region ${{ env.eks-region }} update-kubeconfig --name ${{ inputs.eks-cluster-name }} --alias ${{ inputs.eks-cluster-name }}
+      - run: aws eks --region ${{ inputs.eks-region }} update-kubeconfig --name ${{ inputs.eks-cluster-name }} --alias ${{ inputs.eks-cluster-name }}
         shell: bash
   
 # ----------------------  HELM ----------------------------
