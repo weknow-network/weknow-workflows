@@ -19,6 +19,13 @@ on:
         description: "the cluster region"
         required: false
         default: us-east-2
+      kubectl-version:
+        type: string
+        description: "kubectl version"
+        required: false
+        # default: "v1.23.6"
+        default: "v1.18.5"
+        # https://www.gitclear.com/open_repos/kubernetes/kubernetes/releases
       organization:
         type: string
         description: "github organization / user of the repo"
@@ -66,13 +73,6 @@ on:
         type: string
         description: "the name of github package secret (which allow to fetch the image)"
         required: true
-      kubectl-version:
-        type: string
-        description: "kubectl version"
-        required: false
-        # default: "v1.23.6"
-        default: "v1.18.5"
-        # https://www.gitclear.com/open_repos/kubernetes/kubernetes/releases
 
     secrets:
       EKS_ACCESS_KEY_ID:
