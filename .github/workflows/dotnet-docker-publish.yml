@@ -49,7 +49,7 @@ jobs:
       - id: throw-on-failure  
         uses: weknow-network/weknow-throw-on-failure@v13    
 
-      - uses: actions/checkout@v3 # needed for get version
+      - uses: actions/checkout@v3 
 
       - name: Short Image Name
         id: short-image-name
@@ -69,28 +69,11 @@ jobs:
         id: full-image-path
         run: echo ::set-output name=value::${{ env.BASE_PATH }}${{ steps.image.outputs.value }}
 
-      - uses: actions/checkout@v3 # needed for Dockerfile
+      - uses: actions/checkout@v3 # fetch Dockerfile + nuget configuration template
         with:
          repository: weknow-network/weknow-dockerfiles
          path: docker-file
          ref: release/2022-08-23
-        #  ssh-key: ${{ secrets.DOCKER_FILES_SSH_PRIVATE_KEY }}
-        #  token: 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
-
-      # - name: ls./docker-file/dotnet
-      #   run: |
-      #     echo $(ls -at ./docker-file/dotnet)
-      #   shell: bash
-
-      # - name: ls .
-      #   run: |
-      #     echo $(ls -at .)
-      #   shell: bash
-
-      # - name: nuget config before
-      #   run: |
-      #     cat nuget.config
-      #   shell: bash
 
       - name: modify nuget.config
         run: |
@@ -98,12 +81,6 @@ jobs:
           rm ./nuget.config 
           cp ./docker-file/dotnet/nuget.config.template.xml ./nuget.config
         shell: bash
-
-      # - name: nuget config after
-      #   run: |
-      #     cat nuget.config
-      #   shell: bash
-
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -128,16 +105,5 @@ jobs:
           build-args: |
             PROJECT=${{ inputs.project }}
             ENTRY_PREFIX=${{ inputs.assembly-prefix }}
-          # github-token: ${{ secrets.UPLOAD_PACKAGE_LOCAL }}
-          # secrets: |
-          #   "github_token=${{ secrets.GITHUB_TOKEN }}"
-          #   "TEST=123"
-          #   "REGISTRY_AUTH_TOKEN=${{ secrets.UPLOAD_PACKAGE_LOCAL }}"
-
-  #           --tag ${{ steps.full-image-path.outputs.value }} \
-  #           --build-arg PROJECT=${{ inputs.project }} \
-  #           --build-arg ENTRY_PREFIX=${{ inputs.assembly-prefix }} \
-  #           --build-arg NUGET_USER_NAME=bnayae \
-  #           --build-arg NUGET_AUTH_TOKEN=${{ env.READ_PACKAGES_LOCAL }}  \
 
 
