@@ -38,7 +38,6 @@ on:
 
 env: # https://docs.github.com/en/actions/learn-github-actions/environment-variables
   BASE_PATH: ghcr.io/${{ inputs.organization }}/
-  DOWNLOAD_PACKAGE_LOCAL: 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
 
 jobs:
   docker:
@@ -74,24 +73,24 @@ jobs:
         with:
          repository: weknow-network/weknow-dockerfiles
          path: docker-file
-         ref: release/2022-08-22
+         ref: release/2022-08-23
         #  ssh-key: ${{ secrets.DOCKER_FILES_SSH_PRIVATE_KEY }}
         #  token: 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
 
-      - name: ls./docker-file/dotnet
-        run: |
-          echo $(ls -at ./docker-file/dotnet)
-        shell: bash
+      # - name: ls./docker-file/dotnet
+      #   run: |
+      #     echo $(ls -at ./docker-file/dotnet)
+      #   shell: bash
 
-      - name: ls .
-        run: |
-          echo $(ls -at .)
-        shell: bash
+      # - name: ls .
+      #   run: |
+      #     echo $(ls -at .)
+      #   shell: bash
 
-      - name: nuget config before
-        run: |
-          cat nuget.config
-        shell: bash
+      # - name: nuget config before
+      #   run: |
+      #     cat nuget.config
+      #   shell: bash
 
       - name: modify nuget.config
         run: |
@@ -100,10 +99,10 @@ jobs:
           cp ./docker-file/dotnet/nuget.config.template.xml ./nuget.config
         shell: bash
 
-      - name: nuget config after
-        run: |
-          cat nuget.config
-        shell: bash
+      # - name: nuget config after
+      #   run: |
+      #     cat nuget.config
+      #   shell: bash
 
 
       - name: Set up QEMU
@@ -126,14 +125,14 @@ jobs:
           tags: |
             ${{ steps.full-image-path.outputs.value }}:latest
             ${{ steps.full-image-path.outputs.value }}:${{ steps.get-version.outputs.version }}
-          secrets: |
-            "github_token=${{ secrets.GITHUB_TOKEN }}"
-            "TEST=123"
-            "REGISTRY_AUTH_TOKEN=${{ secrets.UPLOAD_PACKAGE_LOCAL }}"
           build-args: |
             PROJECT=${{ inputs.project }}
             ENTRY_PREFIX=${{ inputs.assembly-prefix }}
-          github-token: ${{ secrets.UPLOAD_PACKAGE_LOCAL }}
+          # github-token: ${{ secrets.UPLOAD_PACKAGE_LOCAL }}
+          # secrets: |
+          #   "github_token=${{ secrets.GITHUB_TOKEN }}"
+          #   "TEST=123"
+          #   "REGISTRY_AUTH_TOKEN=${{ secrets.UPLOAD_PACKAGE_LOCAL }}"
 
   #           --tag ${{ steps.full-image-path.outputs.value }} \
   #           --build-arg PROJECT=${{ inputs.project }} \
@@ -142,78 +141,3 @@ jobs:
   #           --build-arg NUGET_AUTH_TOKEN=${{ env.READ_PACKAGES_LOCAL }}  \
 
 
-  # build-publish_docker:
-  #   # if: ${{ github.event.workflow_run.conclusion != 'failure' }}
-  #   name: Publish Docker
-  #   runs-on: ubuntu-latest    
-  #   # if: github.ref == 'refs/heads/master' || github.event_name == 'release'   
-
-  #   steps:
-  #     - id: throw-on-failure  
-  #       # if: ${{ github.event.workflow_run.conclusion == 'failure' }}
-  #       uses: weknow-network/weknow-throw-on-failure@v13    
-
-  #     # https://github.com/actions/checkout
-  #     - uses: actions/checkout@v3 # needed for get version
-     
-  #     - name: ls
-  #       run: |
-  #         echo $(ls)
-  #       shell: bash
-     
-  #     # - name: Short Name
-  #     #   id: short-image-name
-  #     #   run: echo ::set-output name=value::$(echo "$GITHUB_REPOSITORY" | perl -p -e 's/${{ inputs.organization }}\/${{ inputs.repo-prefix-convention }}(.*)/"$1"/eg')
-
-  #     - name: Short Image Name
-  #       id: short-image-name
-  #       run: |
-  #           echo ::set-output name=value::$(echo "${{ inputs.project }}" | tr '.' '-' | tr '[:upper:]' '[:lower:]')
-  #       shell: bash
-
-  #     - name: Image
-  #       id: image
-  #       run: echo ::set-output name=value::$(echo "${{ steps.short-image-name.outputs.value }}") 
-  #       shell: bash
-
-  #     - id: get-version
-  #       uses: weknow-network/get-dotnet-version-action@v2
-
-  #     - name: Full image path
-  #       id: full-image-path
-  #       run: echo ::set-output name=value::${{ env.BASE_PATH }}${{ steps.image.outputs.value }}:${{ steps.get-version.outputs.version }}
-
-  #     - uses: actions/checkout@v3 # needed for Dockerfile
-  #       with:
-  #        repository: weknow-network/weknow-dockerfiles
-  #        path: docker-file
-  #        ref: release/2022-08-21
-  #       #  ssh-key: ${{ secrets.DOCKER_FILES_SSH_PRIVATE_KEY }}
-  #       #  token: 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
-     
-  #     - name: ls
-  #       run: |
-  #         echo $(ls -at ./docker-file/dotnet)
-  #       shell: bash
-  
-  #     # - name:  NuGet Add github's private registry
-  #     #   run: dotnet nuget add source --username bnayae --password ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/weknow-network/index.json"
-  #     #   shell: bash
-
-  #     - name: Docker Build
-  #       run: |
-  #         docker build \
-  #           -f ./docker-file/dotnet/Dockerfile \
-  #           --tag ${{ steps.full-image-path.outputs.value }} \
-  #           --build-arg PROJECT=${{ inputs.project }} \
-  #           --build-arg ENTRY_PREFIX=${{ inputs.assembly-prefix }} \
-  #           --build-arg NUGET_USER_NAME=bnayae \
-  #           --build-arg NUGET_AUTH_TOKEN=${{ env.READ_PACKAGES_LOCAL }}  \
-  #           .
-  #       # run: docker build . --file ${{ steps.dockerfile.outputs.path }} --tag ${{ steps.full-image-path.outputs.value }}
-  
-  #     - name: Login to GitHub Package (${{ inputs.repo-owner }})
-  #       run: docker login ghcr.io -u ${{ inputs.repo-owner }} -p ${{ secrets.UPLOAD_PACKAGE_LOCAL }} 
-  
-  #     - name: push to  GitHub Package
-  #       run: docker push ${{ steps.full-image-path.outputs.value }}
