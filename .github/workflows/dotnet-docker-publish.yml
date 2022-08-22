@@ -97,7 +97,7 @@ jobs:
         run: |
           sed -i -e "s/USER/bnayae/g" -e "s/PW/${{ secrets.UPLOAD_PACKAGE_LOCAL }}/g" ./docker-file/dotnet/nuget.config.template.xml 
           rm ./nuget.config 
-          COPY ./docker-file/dotnet/nuget.config.template.xml ./nuget.config
+          cp ./docker-file/dotnet/nuget.config.template.xml ./nuget.config
         shell: bash
 
       - name: nuget config after
