@@ -13,7 +13,7 @@ on:
         type: string
         description: "the cluster name"
         required: false
-        default: wk-us-prod-eks
+        # default: wk-us-prod-eks
       eks-region:
         type: string
         description: "the cluster region"
@@ -93,9 +93,6 @@ on:
       # GITHUB_HELM_TOKEN:
       #   description: "token to the helm repo"
       #   required: true          
-
-env: # https://docs.github.com/en/actions/learn-github-actions/environment-variables
-  IMAGE_BASE_PATH: ghcr.io/${{ inputs.organization }}/
 
 jobs:
   var:
