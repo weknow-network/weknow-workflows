@@ -47,6 +47,11 @@ jobs:
     runs-on: ubuntu-latest    
     # if: github.ref == 'refs/heads/master' || github.event_name == 'release'   
     steps:
+      - id: throw-on-failure  
+        uses: weknow-network/weknow-throw-on-failure@v13    
+
+      - uses: actions/checkout@v3 # needed for get version
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
       - name: Set up Docker Buildx
@@ -74,7 +79,7 @@ jobs:
 
       - name: Full image path
         id: full-image-path
-        run: echo ::set-output name=value::${{ env.BASE_PATH }}${{ steps.image.outputs.value }}:${{ steps.get-version.outputs.version }}
+        run: echo ::set-output name=value::${{ env.BASE_PATH }}${{ steps.image.outputs.value }}
 
       - uses: actions/checkout@v3 # needed for Dockerfile
         with:
@@ -90,8 +95,8 @@ jobs:
           push: true
           file: ./docker-file/dotnet/Dockerfile
           tags: 
-            ghcr.io/user/${{ steps.image.outputs.value }}:latest
-            ghcr.io/user/${{ steps.full-image-path.outputs.value }}
+            ${{ steps.full-image-path.outputs.value }}:latest
+            ${{ steps.full-image-path.outputs.value }}:${{ steps.get-version.outputs.version }}
           secrets: |
             GIT_AUTH_TOKEN=${{ secrets.UPLOAD_PACKAGE_LOCAL }}
           build-args: |
