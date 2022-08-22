@@ -1,0 +1,183 @@
+name: Publish Docker
+
+# doc:               https://docs.github.com/en/actions
+# variables:         https://docs.github.com/en/actions/learn-github-actions/environment-variables
+# secrets:           https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#example-17
+# env:               https://docs.github.com/en/actions/learn-github-actions/environment-variables
+# reusable workflow: https://docs.github.com/en/actions/learn-github-actions/reusing-workflows#access-to-reusable-workflows
+
+on: 
+  workflow_call:
+    inputs:
+      organization:
+        type: string
+        description: "github organization / user of the repo"
+        required: true
+      repo-prefix-convention:
+        type: string
+        description: "expected prefix of the repo name"
+        required: true
+      repo-owner:
+        type: string
+        description: "the repo owner"
+        required: true
+      project:
+        type: string
+        description: "the name of the project directory"
+        required: false
+      assembly-prefix:
+        type: string
+        description: "the name of the assembly prefix prefix.project.dll"
+        required: false
+        default: Weknow.Backend.
+
+    secrets:
+      UPLOAD_PACKAGE_LOCAL:
+        description: "Write token to the nuget registry."
+        required: true  
+
+env: # https://docs.github.com/en/actions/learn-github-actions/environment-variables
+  BASE_PATH: ghcr.io/${{ inputs.organization }}/
+  DOWNLOAD_PACKAGE_LOCAL: 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
+
+jobs:
+  docker:
+    # if: ${{ github.event.workflow_run.conclusion != 'failure' }}
+    name: Publish Docker
+    runs-on: ubuntu-latest    
+    # if: github.ref == 'refs/heads/master' || github.event_name == 'release'   
+    steps:
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.UPLOAD_PACKAGE_LOCAL }}
+
+      - name: Short Image Name
+        id: short-image-name
+        run: |
+            echo ::set-output name=value::$(echo "${{ inputs.project }}" | tr '.' '-' | tr '[:upper:]' '[:lower:]')
+        shell: bash
+
+      - name: Image
+        id: image
+        run: echo ::set-output name=value::$(echo "${{ steps.short-image-name.outputs.value }}") 
+        shell: bash
+
+      - id: get-version
+        uses: weknow-network/get-dotnet-version-action@v2
+
+      - name: Full image path
+        id: full-image-path
+        run: echo ::set-output name=value::${{ env.BASE_PATH }}${{ steps.image.outputs.value }}:${{ steps.get-version.outputs.version }}
+
+      - uses: actions/checkout@v3 # needed for Dockerfile
+        with:
+         repository: weknow-network/weknow-dockerfiles
+         path: docker-file
+         ref: release/2022-08-22
+        #  ssh-key: ${{ secrets.DOCKER_FILES_SSH_PRIVATE_KEY }}
+        #  token: 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
+
+      - name: Build and push
+        uses: docker/build-push-action@v3
+        with:
+          push: true
+          file: ./docker-file/dotnet/Dockerfile
+          tags: 
+            ghcr.io/user/${{ steps.image.outputs.value }}:latest
+            ghcr.io/user/${{ steps.full-image-path.outputs.value }}
+          secrets: |
+            GIT_AUTH_TOKEN=${{ secrets.UPLOAD_PACKAGE_LOCAL }}
+          build-args: |
+            PROJECT=${{ inputs.project }}
+            ENTRY_PREFIX=${{ inputs.assembly-prefix }}
+          github-token: ${{ secrets.UPLOAD_PACKAGE_LOCAL }}
+
+  #           --tag ${{ steps.full-image-path.outputs.value }} \
+  #           --build-arg PROJECT=${{ inputs.project }} \
+  #           --build-arg ENTRY_PREFIX=${{ inputs.assembly-prefix }} \
+  #           --build-arg NUGET_USER_NAME=bnayae \
+  #           --build-arg NUGET_AUTH_TOKEN=${{ env.READ_PACKAGES_LOCAL }}  \
+
+
+  # build-publish_docker:
+  #   # if: ${{ github.event.workflow_run.conclusion != 'failure' }}
+  #   name: Publish Docker
+  #   runs-on: ubuntu-latest    
+  #   # if: github.ref == 'refs/heads/master' || github.event_name == 'release'   
+
+  #   steps:
+  #     - id: throw-on-failure  
+  #       # if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+  #       uses: weknow-network/weknow-throw-on-failure@v13    
+
+  #     # https://github.com/actions/checkout
+  #     - uses: actions/checkout@v3 # needed for get version
+     
+  #     - name: ls
+  #       run: |
+  #         echo $(ls)
+  #       shell: bash
+     
+  #     # - name: Short Name
+  #     #   id: short-image-name
+  #     #   run: echo ::set-output name=value::$(echo "$GITHUB_REPOSITORY" | perl -p -e 's/${{ inputs.organization }}\/${{ inputs.repo-prefix-convention }}(.*)/"$1"/eg')
+
+  #     - name: Short Image Name
+  #       id: short-image-name
+  #       run: |
+  #           echo ::set-output name=value::$(echo "${{ inputs.project }}" | tr '.' '-' | tr '[:upper:]' '[:lower:]')
+  #       shell: bash
+
+  #     - name: Image
+  #       id: image
+  #       run: echo ::set-output name=value::$(echo "${{ steps.short-image-name.outputs.value }}") 
+  #       shell: bash
+
+  #     - id: get-version
+  #       uses: weknow-network/get-dotnet-version-action@v2
+
+  #     - name: Full image path
+  #       id: full-image-path
+  #       run: echo ::set-output name=value::${{ env.BASE_PATH }}${{ steps.image.outputs.value }}:${{ steps.get-version.outputs.version }}
+
+  #     - uses: actions/checkout@v3 # needed for Dockerfile
+  #       with:
+  #        repository: weknow-network/weknow-dockerfiles
+  #        path: docker-file
+  #        ref: release/2022-08-21
+  #       #  ssh-key: ${{ secrets.DOCKER_FILES_SSH_PRIVATE_KEY }}
+  #       #  token: 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
+     
+  #     - name: ls
+  #       run: |
+  #         echo $(ls -at ./docker-file/dotnet)
+  #       shell: bash
+  
+  #     # - name:  NuGet Add github's private registry
+  #     #   run: dotnet nuget add source --username bnayae --password ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/weknow-network/index.json"
+  #     #   shell: bash
+
+  #     - name: Docker Build
+  #       run: |
+  #         docker build \
+  #           -f ./docker-file/dotnet/Dockerfile \
+  #           --tag ${{ steps.full-image-path.outputs.value }} \
+  #           --build-arg PROJECT=${{ inputs.project }} \
+  #           --build-arg ENTRY_PREFIX=${{ inputs.assembly-prefix }} \
+  #           --build-arg NUGET_USER_NAME=bnayae \
+  #           --build-arg NUGET_AUTH_TOKEN=${{ env.READ_PACKAGES_LOCAL }}  \
+  #           .
+  #       # run: docker build . --file ${{ steps.dockerfile.outputs.path }} --tag ${{ steps.full-image-path.outputs.value }}
+  
+  #     - name: Login to GitHub Package (${{ inputs.repo-owner }})
+  #       run: docker login ghcr.io -u ${{ inputs.repo-owner }} -p ${{ secrets.UPLOAD_PACKAGE_LOCAL }} 
+  
+  #     - name: push to  GitHub Package
+  #       run: docker push ${{ steps.full-image-path.outputs.value }}
