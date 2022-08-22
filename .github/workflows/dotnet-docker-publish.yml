@@ -105,7 +105,6 @@ jobs:
             ${{ steps.full-image-path.outputs.value }}:latest
             ${{ steps.full-image-path.outputs.value }}:${{ steps.get-version.outputs.version }}
           secrets: |
-            GIT_AUTH_TOKEN=${{ secrets.UPLOAD_PACKAGE_LOCAL }}
             "AUTH_TOKEN=${{ secrets.UPLOAD_PACKAGE_LOCAL }}"
           build-args: |
             PROJECT=${{ inputs.project }}
