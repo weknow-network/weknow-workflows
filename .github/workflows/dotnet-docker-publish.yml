@@ -89,6 +89,21 @@ jobs:
         #  ssh-key: ${{ secrets.DOCKER_FILES_SSH_PRIVATE_KEY }}
         #  token: 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
 
+      - name: ls
+        run: |
+          echo $(ls -at ./docker-file/dotnet)
+        shell: bash
+
+      - name: ls
+        run: |
+          echo $(ls -at .)
+        shell: bash
+
+      - name: ls
+        run: |
+          echo $(ls -at /)
+        shell: bash
+
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
