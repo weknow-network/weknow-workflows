@@ -107,9 +107,9 @@ jobs:
             --build-arg PROJECT=${{ inputs.project }} \
             --build-arg ENTRY_PREFIX=${{ inputs.assembly-prefix }} \
             --build-arg NUGET_USER_NAME=bnayae \
-            --build-arg NUGET_AUTH_TOKEN=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  \
+            --build-arg NUGET_AUTH_TOKEN=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  \
             .
-        # --build-arg NUGET_AUTH_TOKEN=${{ env.DOWNLOAD_PACKAGE_LOCAL }}  \
+        # --build-arg NUGET_AUTH_TOKEN=${{ env.READ_PACKAGES_LOCAL }}  \
         # run: docker build . --file ${{ steps.dockerfile.outputs.path }} --tag ${{ steps.full-image-path.outputs.value }}
   
       - name: Login to GitHub Package (${{ inputs.repo-owner }})
