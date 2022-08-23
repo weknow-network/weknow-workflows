@@ -94,6 +94,9 @@ on:
       #   description: "token to the helm repo"
       #   required: true          
 
+env: # https://docs.github.com/en/actions/learn-github-actions/environment-variables
+  IMAGE_BASE_PATH: ghcr.io/${{ inputs.organization }}/
+  
 jobs:
   var:
     name: Set variables
