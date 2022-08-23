@@ -12,20 +12,15 @@ on:
       eks-cluster-name:
         type: string
         description: "the cluster name"
-        required: true
-        # default: wk-us-prod-eks
+        required: false
       eks-region:
         type: string
         description: "the cluster region"
-        required: true
-        # default: us-east-2
+        required: false
       kubectl-version:
         type: string
         description: "kubectl version"
-        required: true
-        # default: "v1.23.6"
-        # default: "v1.18.5"
-        # https://www.gitclear.com/open_repos/kubernetes/kubernetes/releases
+        required: false
       organization:
         type: string
         description: "github organization / user of the repo"
@@ -104,37 +99,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:   
-      - uses: actions/checkout@v3 
-        with:
-         repository: weknow-network/weknow-workflows
-         path: ci
-         ref: ${{ env.BRANCH }}
-
-      - name: ls3
-        run: ls -at ./ci/.github
-      - name: ls2
-        run: ls -at ./ci/.github/actions/eks-cluster-info  
-
-      - id: cluster-info
-        # if: ${{ github.event.workflow_run.conclusion == 'failure' }}
-        uses: ./ci/.github/actions/eks-cluster-info  
-        with:
-          kubectl-version: 111
-
-      - name: check
-        run: |
-          echo ${{ steps.cluster-info.outputs.cluster-name }}  
-          echo ${{ steps.cluster-info.outputs.cluster-region }}  
-          echo ${{ steps.cluster-info.outputs.kubectl-version }}  
-
-      - name: Throw
-        uses: actions/github-script@v5
-        with:
-          script: |
-              core.setFailed('BREAK FOR CHECK')
-
       - id: throw-on-failure  
-        # if: ${{ github.event.workflow_run.conclusion == 'failure' }}
         uses: weknow-network/weknow-throw-on-failure@v13    
 
       - name: Short Name
@@ -162,28 +127,35 @@ jobs:
         id: ns
         run: echo ::set-output name=value::$(echo "wk-${{ steps.key.outputs.value }}")
   
-      # - name: Chart File
-      #   id: chart-file
-      #   run: |
-      #       echo ::set-output name=value::$(echo "./${{ inputs.project }}/charts/Chart.yaml")
-      #   shell: bash
+      - uses: actions/checkout@v3 
+        with:
+         repository: weknow-network/weknow-workflows
+         path: ci
+         ref: ${{ env.BRANCH }}
 
-      # - name: Chart Folder
-      #   id: chart-folder
-      #   run: echo ::set-output name=value::$(echo "$(dirname ${{ steps.chart-file.outputs.value }})")
+      - id: cluster-info
+        # if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+        uses: ./ci/.github/actions/eks-cluster-info  
+        with:
+          cluster-name: ${{ inputs.eks-cluster-name }}
+          cluster-region: ${{ inputs.eks-region }}
+          kubectl-version: ${{ inputs.kubectl-version }}
 
-      # - name: Vault-SA
-      #   id: vault-sa
-      #   run: echo ::set-output name=value::$(echo "${{ steps.ns.outputs.value }}-vault-sa" | tr '[:upper:]' '[:lower:]' )
+      - name: Cluster info validation
+        run: |
+          echo ${{ steps.cluster-info.outputs.cluster-name }}  
+          echo ${{ steps.cluster-info.outputs.cluster-region }}  
+          echo ${{ steps.cluster-info.outputs.kubectl-version }}  
+
 
     outputs:
       short-name: ${{ steps.short-name.outputs.value }}
       full-name: ${{ steps.full-name.outputs.value }}
       ns: ${{ steps.ns.outputs.value }}
       ingress: ${{ steps.key.outputs.value }}
-      # chart-file: ${{ steps.chart-file.outputs.value }}
-      # chart-folder: ${{ steps.chart-folder.outputs.value }}
-      # vault-sa: ${{ steps.vault-sa.outputs.value }}
+      cluster-name: ${{ steps.cluster-info.outputs.cluster-name }}
+      cluster-region: ${{ steps.cluster-info.outputs.cluster-region }}
+      kubectl-version: ${{ steps.cluster-info.outputs.kubectl-version }}
 
   prepare-publish-to-eks:
     needs: var
@@ -194,9 +166,6 @@ jobs:
       - id: throw-on-failure  
         # if: ${{ github.event.workflow_run.conclusion == 'failure' }}
         uses: weknow-network/weknow-throw-on-failure@v13    
-      
-      - name: eco
-        run: echo ${{ inputs.eks-region }}
   
 # ----------------------  SETUP + CREDENTIALS ----------------------------      
       - name: Configure AWS credentials
@@ -204,19 +173,12 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.EKS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.EKS_ACCESS_KEY_SECRET }}
-          aws-region: ${{ inputs.eks-region }}
+          aws-region: ${{ needs.var.outputs.cluster-region }}
   
       - name: Kubectl tool installer
         uses: Azure/setup-kubectl@v2.0
         with: 
-          version: ${{ inputs.kubectl-version }}
-
-      # - name: Kubectl version
-      #   run: kubectl version || true
-
-      # - name: Kubectl get ns
-      #   run: kubectl get ns || true
-      #   shell: bash
+          version: ${{ needs.var.outputs.kubectl-version }}
       
       - id: install-aws-cli
         uses: unfor19/install-aws-cli-action@v1
@@ -225,7 +187,7 @@ jobs:
           verbose: false
           aws-access-key-id: ${{ secrets.EKS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.EKS_ACCESS_KEY_SECRET }}
-          aws-region: ${{ inputs.eks-region }}        
+          aws-region: ${{ needs.var.outputs.cluster-region }}        
           
       - name: Update aws cli version
         run: 
@@ -244,7 +206,7 @@ jobs:
           sudo ./aws/install --update
         shell: bash
 
-      - run: aws eks --region ${{ inputs.eks-region }} update-kubeconfig --name ${{ inputs.eks-cluster-name }} --alias ${{ inputs.eks-cluster-name }}
+      - run: aws eks --region ${{ needs.var.outputs.cluster-region }} update-kubeconfig --name ${{ needs.var.outputs.cluster-name }} --alias ${{ needs.var.outputs.cluster-name }}
         shell: bash
   
 # ----------------------  CREATE NAMESPACE ----------------------------
@@ -294,12 +256,12 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.EKS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.EKS_ACCESS_KEY_SECRET }}
-          aws-region: ${{ inputs.eks-region }}
+          aws-region: ${{ needs.var.outputs.cluster-region }}
   
       - name: Kubectl tool installer
         uses: Azure/setup-kubectl@v2.0
         with: 
-          version: ${{ inputs.kubectl-version }}
+          version: ${{ needs.var.outputs.kubectl-version }}
       
       - id: install-aws-cli
         uses: unfor19/install-aws-cli-action@v1
@@ -308,7 +270,7 @@ jobs:
           verbose: false
           aws-access-key-id: ${{ secrets.EKS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.EKS_ACCESS_KEY_SECRET }}
-          aws-region: ${{ inputs.eks-region }}        
+          aws-region: ${{ needs.var.outputs.cluster-region }}        
           
       - name: Update aws cli version
         run: 
@@ -327,7 +289,7 @@ jobs:
           sudo ./aws/install --update
         shell: bash
           
-      - run: aws eks --region ${{ inputs.eks-region }} update-kubeconfig --name ${{ inputs.eks-cluster-name }} --alias ${{ inputs.eks-cluster-name }}
+      - run: aws eks --region ${{ needs.var.outputs.cluster-region }} update-kubeconfig --name ${{ needs.var.outputs.cluster-name }} --alias ${{ needs.var.outputs.cluster-name }}
         shell: bash
   
 # ----------------------  HELM ----------------------------
@@ -374,9 +336,5 @@ jobs:
             --set ingress.name=${{ needs.var.outputs.ingress }} \
             --set probes.enabled=${{ inputs.probs-enabled }} \
             --set ${{ secrets.SECRETS_COMMON }},${{ secrets.SECRETS_OF_MODULE }}
-
-        # helm upgrade ${{ needs.var.outputs.short-name }} . \
-        # --username "${secrets.GITHUB_HELM_TOKEN}" \
-        # --password "${secrets.GITHUB_HELM_TOKEN}" \
 
   
