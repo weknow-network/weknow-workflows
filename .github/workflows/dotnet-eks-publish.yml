@@ -258,6 +258,24 @@ jobs:
       # https://github.com/actions/checkout
       - uses: actions/checkout@v3 # needed for get version
 
+      - id: cluster-info
+        # if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+        uses: eks-cluster-info  
+        with:
+          kubectl-version: 111
+
+      - name: check
+        run: |
+          echo ${{ steps.cluster-info.outputs.cluster-name }}  
+          echo ${{ steps.cluster-info.outputs.cluster-region }}  
+          echo ${{ steps.cluster-info.outputs.kubectl-version }}  
+
+      - name: Throw
+        uses: actions/github-script@v5
+        with:
+          script: |
+              core.setFailed('BREAK FOR CHECK')
+
 # ----------------------  SETUP + CREDENTIALS ----------------------------      
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -268,8 +286,8 @@ jobs:
   
       - name: Kubectl tool installer
         uses: Azure/setup-kubectl@v2.0
-        # with: 
-        #   version: ${{ inputs.kubectl-version }}
+        with: 
+          version: ${{ inputs.kubectl-version }}
       
       - id: install-aws-cli
         uses: unfor19/install-aws-cli-action@v1

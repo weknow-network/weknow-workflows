@@ -1,0 +1,57 @@
+# doc: https://docs.github.com/en/actions
+# custom: https://docs.github.com/en/actions/creating-actions/creating-a-composite-action
+# variables: https://docs.github.com/en/actions/learn-github-actions/environment-variables
+# secrets: https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#example-17
+
+name: 'EKS cluster info'
+description: 'Providing default + override option to get cluster info'
+inputs:
+  cluster-name:
+    type: string
+    description: "the cluster name"
+    required: true
+    # default: wk-us-prod-eks
+  cluster-region:
+    type: string
+    description: "the cluster region"
+    required: true
+    # default: us-east-2
+  kubectl-version:
+    type: string
+    description: "kubectl version"
+    required: true
+    # default: "v1.23.6"
+    # default: "v1.18.5"
+    # https://www.gitclear.com/open_repos/kubernetes/kubernetes/releases
+outputs:
+  cluster-name:
+    description: "the cluster name"
+    value: ${{ steps.cluster.outputs.name }}
+  cluster-region:
+    description: "the cluster region"
+    value: ${{ steps.cluster.outputs.region }}
+  kubectl-version:
+    description: "the kubectl version"
+    value: ${{ steps.kubectl.outputs.version }}
+runs:
+  using: "composite"
+  steps:
+    - id: cluster
+      run: |
+        if [[ "${{ inputs.cluster-name }}" == "" ]]; then
+            echo "::set-output name=name::wk-us-prod-eks"
+        else
+            echo "::set-output name=name::${{ inputs.cluster-name }}"
+        fi  
+        if [[ "${{ inputs.cluster-region }}" == "" ]]; then
+            echo "::set-output name=region::wk-us-prod-eks"
+        else
+            echo "::set-output name=region::${{ inputs.cluster-region }}"
+        fi  
+    - id: kubectl
+      run: |
+        if [[ "${{ inputs.kubectl-version }}" == "" ]]; then
+            echo "::set-output name=version::wk-us-prod-eks"
+        else
+            echo "::set-output name=version::${{ inputs.kubectl-version }}"
+        fi  
