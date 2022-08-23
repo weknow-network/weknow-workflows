@@ -103,6 +103,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
+      - id: cluster-info
+        # if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+        uses: ./.github/actions/eks-cluster-info  
+        with:
+          kubectl-version: 111
+
+      - name: check
+        run: |
+          echo ${{ steps.cluster-info.outputs.cluster-name }}  
+          echo ${{ steps.cluster-info.outputs.cluster-region }}  
+          echo ${{ steps.cluster-info.outputs.kubectl-version }}  
+
+      - name: Throw
+        uses: actions/github-script@v5
+        with:
+          script: |
+              core.setFailed('BREAK FOR CHECK')
+
       - id: throw-on-failure  
         # if: ${{ github.event.workflow_run.conclusion == 'failure' }}
         uses: weknow-network/weknow-throw-on-failure@v13    
@@ -257,24 +276,6 @@ jobs:
 
       # https://github.com/actions/checkout
       - uses: actions/checkout@v3 # needed for get version
-
-      - id: cluster-info
-        # if: ${{ github.event.workflow_run.conclusion == 'failure' }}
-        uses: ./.github/actions/eks-cluster-info  
-        with:
-          kubectl-version: 111
-
-      - name: check
-        run: |
-          echo ${{ steps.cluster-info.outputs.cluster-name }}  
-          echo ${{ steps.cluster-info.outputs.cluster-region }}  
-          echo ${{ steps.cluster-info.outputs.kubectl-version }}  
-
-      - name: Throw
-        uses: actions/github-script@v5
-        with:
-          script: |
-              core.setFailed('BREAK FOR CHECK')
 
 # ----------------------  SETUP + CREDENTIALS ----------------------------      
       - name: Configure AWS credentials
