@@ -108,7 +108,7 @@ jobs:
         with:
          repository: weknow-network/weknow-workflows
          path: ci
-         ref: ${{ emv.BRANCH }}
+         ref: ${{ env.BRANCH }}
 
       - name: ls3
         run: ls -at ./ci/.github
