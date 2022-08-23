@@ -108,16 +108,14 @@ jobs:
          repository: weknow-network/weknow-workflows
          path: ci
 
-      - name: ls4
-        run: ls -at /  
       - name: ls3
-        run: ls -at . 
+        run: ls -at ./ci
       - name: ls2
         run: ls -at ./ci/.github/actions/eks-cluster-info  
 
       - id: cluster-info
         # if: ${{ github.event.workflow_run.conclusion == 'failure' }}
-        uses: ./.github/actions/eks-cluster-info  
+        uses: ./ci/.github/actions/eks-cluster-info  
         with:
           kubectl-version: 111
 
