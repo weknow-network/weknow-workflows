@@ -96,23 +96,19 @@ on:
 
 env: # https://docs.github.com/en/actions/learn-github-actions/environment-variables
   IMAGE_BASE_PATH: ghcr.io/${{ inputs.organization }}/
+  BRANCH: release/2022-08-21
   
 jobs:
   var:
     name: Set variables
     runs-on: ubuntu-latest
 
-    steps:
-      - name: Extract branch name
-        shell: bash
-        run: echo "::set-env name=BRANCH_NAME::$(echo ${GITHUB_REF#refs/heads/} | sed 's/\//_/g')"
-      - name: Test
-        run: echo "${BRANCH_NAME}"    
+    steps:   
       - uses: actions/checkout@v3 
         with:
          repository: weknow-network/weknow-workflows
          path: ci
-         ref: ${BRANCH_NAME}
+         ref: ${{ emv.BRANCH }}
 
       - name: ls3
         run: ls -at ./ci/.github
