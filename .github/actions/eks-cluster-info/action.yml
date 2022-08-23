@@ -7,19 +7,16 @@ name: 'EKS cluster info'
 description: 'Providing default + override option to get cluster info'
 inputs:
   cluster-name:
-    type: string
     description: "the cluster name"
-    required: true
+    required: false
     # default: wk-us-prod-eks
   cluster-region:
-    type: string
     description: "the cluster region"
-    required: true
+    required: false
     # default: us-east-2
   kubectl-version:
-    type: string
     description: "kubectl version"
-    required: true
+    required: false
     # default: "v1.23.6"
     # default: "v1.18.5"
     # https://www.gitclear.com/open_repos/kubernetes/kubernetes/releases
@@ -48,6 +45,7 @@ runs:
         else
             echo "::set-output name=region::${{ inputs.cluster-region }}"
         fi  
+      shell: bash
     - id: kubectl
       run: |
         if [[ "${{ inputs.kubectl-version }}" == "" ]]; then
@@ -55,3 +53,4 @@ runs:
         else
             echo "::set-output name=version::${{ inputs.kubectl-version }}"
         fi  
+      shell: bash
