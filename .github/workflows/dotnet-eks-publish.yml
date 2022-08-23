@@ -109,7 +109,7 @@ jobs:
          path: ci
 
       - name: ls3
-        run: ls -at ./ci
+        run: ls -at ./ci/.github
       - name: ls2
         run: ls -at ./ci/.github/actions/eks-cluster-info  
 
