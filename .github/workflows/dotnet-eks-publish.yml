@@ -260,7 +260,7 @@ jobs:
 
       - id: cluster-info
         # if: ${{ github.event.workflow_run.conclusion == 'failure' }}
-        uses: eks-cluster-info  
+        uses: ./.github/actions/eks-cluster-info  
         with:
           kubectl-version: 111
 
