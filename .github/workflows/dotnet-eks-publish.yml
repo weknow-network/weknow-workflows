@@ -105,10 +105,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3 
 
-      - name: ls1
-        run: ls -at ./.github/actions/eks-cluster-info  
+      - name: ls3
+        run: ls -at /  
       - name: ls2
         run: ls -at /.github/actions/eks-cluster-info  
+      - name: ls1
+        run: ls -at ./.github/actions/eks-cluster-info  
 
       - id: cluster-info
         # if: ${{ github.event.workflow_run.conclusion == 'failure' }}
