@@ -74,6 +74,7 @@ jobs:
          ref: ${{ env.BRANCH }}
 
       - id: cluster-info
+        name: Cluster info
         # if: ${{ github.event.workflow_run.conclusion == 'failure' }}
         uses: ./ci/.github/actions/eks-cluster-info  
         with:

@@ -86,7 +86,7 @@ runs:
     - id: organization
       run: |
         if [[ "${{ inputs.organization }}" == "" ]]; then
-            echo "::set-output name=name::weknow-network
+            echo "::set-output name=name::weknow-network"
         else
             echo "::set-output name=name::${{ inputs.organization }}"
         fi  
@@ -94,7 +94,7 @@ runs:
     - id: docker
       run: |
         if [[ "${{ inputs.docker-registry-secret }}" == "" ]]; then
-            echo "::set-output name=secret::github-pkg
+            echo "::set-output name=secret::github-pkg"
         else
             echo "::set-output name=secret::${{ inputs.docker-registry-secret }}"
         fi  
@@ -102,12 +102,12 @@ runs:
     - id: ingress-tls
       run: |
         if [[ "${{ inputs.ingress-tls-secret }}" == "" ]]; then
-            echo "::set-output name=secret::cert-prod-wildcard
+            echo "::set-output name=secret::cert-prod-wildcard"
         else
             echo "::set-output name=secret::${{ inputs.ingress-tls-secret }}"
         fi  
         if [[ "${{ inputs.ingress-tls-secret-ns }}" == "" ]]; then
-            echo "::set-output name=secret-ns::cert-manager
+            echo "::set-output name=secret-ns::cert-manager"
         else
             echo "::set-output name=secret-ns::${{ inputs.ingress-tls-secret-ns }}"
         fi  
