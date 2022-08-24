@@ -24,7 +24,7 @@ on:
       organization:
         type: string
         description: "github organization / user of the repo"
-        required: true
+        required: false
       key: 
         type: string
         description: "a short name used for namespace and ingress host (without the version)"
@@ -55,19 +55,19 @@ on:
       ingress-tls-secret:
         type: string
         description: "the name of the ingress tls"
-        required: true
+        required: false
       ingress-tls-secret-ns:
         type: string
         description: "the namespace of the ingress tls"
-        required: true
-      repo-owner:
-        type: string
-        description: "the repo owner"
-        required: true
+        required: false
       docker-registry-secret:
         type: string
         description: "the name of github package secret (which allow to fetch the image)"
-        required: true
+        required: false
+      # repo-owner:
+      #   type: string
+      #   description: "the repo owner"
+      #   required: true
 
     secrets:
       EKS_ACCESS_KEY_ID:
@@ -90,7 +90,7 @@ on:
       #   required: true          
 
 env: # https://docs.github.com/en/actions/learn-github-actions/environment-variables
-  IMAGE_BASE_PATH: ghcr.io/${{ inputs.organization }}/
+  IMAGE_BASE_PATH: ghcr.io/
   BRANCH: release/2022-08-21
   
 jobs:
@@ -139,13 +139,21 @@ jobs:
         with:
           cluster-name: ${{ inputs.eks-cluster-name }}
           cluster-region: ${{ inputs.eks-region }}
+          organization: ${{ inputs.organization }}
           kubectl-version: ${{ inputs.kubectl-version }}
+          docker-registry-secret: ${{ inputs.docker-registry-secret }}
+          ingress-tls-secret: ${{ inputs.ingress-tls-secret }}
+          ingress-tls-secret-ns: ${{ inputs.ingress-tls-secret-ns }}
 
       - name: Cluster info validation
         run: |
           echo ${{ steps.cluster-info.outputs.cluster-name }}  
           echo ${{ steps.cluster-info.outputs.cluster-region }}  
           echo ${{ steps.cluster-info.outputs.kubectl-version }}  
+          echo ${{ steps.cluster-info.outputs.organization }}  
+          echo ${{ steps.cluster-info.outputs.docker-registry-secret }}  
+          echo ${{ steps.cluster-info.outputs.ingress-tls-secret }}  
+          echo ${{ steps.cluster-info.outputs.ingress-tls-secret-ns }}  
 
 
     outputs:
@@ -155,7 +163,11 @@ jobs:
       ingress: ${{ steps.key.outputs.value }}
       cluster-name: ${{ steps.cluster-info.outputs.cluster-name }}
       cluster-region: ${{ steps.cluster-info.outputs.cluster-region }}
+      organization: ${{ steps.cluster-info.outputs.organization }}
       kubectl-version: ${{ steps.cluster-info.outputs.kubectl-version }}
+      docker-registry-secret: ${{ steps.cluster-info.outputs.docker-registry-secret }}
+      ingress-tls-secret: ${{ steps.cluster-info.outputs.ingress-tls-secret }}
+      ingress-tls-secret-ns: ${{ steps.cluster-info.outputs.ingress-tls-secret-ns }}
 
   prepare-publish-to-eks:
     needs: var
@@ -218,12 +230,12 @@ jobs:
             echo "Create a new namespace '${{ needs.var.outputs.ns }}'"
             kubectl create namespace ${{ needs.var.outputs.ns }}
           
-            if [[ $(kubectl -n ${{ needs.var.outputs.ns }} get secret | grep -E '(^|\s)${{ inputs.ingress-tls-secret }}($|\s)') ]]; then
-               echo "Secret '${{ inputs.ingress-tls-secret }}' in the namespace '${{ needs.var.outputs.ns }}' already exists"
-            elif [[ $(kubectl -n default get secret | grep -E '(^|\s)${{ inputs.ingress-tls-secret }}($|\s)') ]]; then
-                echo "Import '${{ inputs.ingress-tls-secret }}' private key for SSL certificate from the '${{ inputs.ingress-tls-secret-ns }}' namespace"
-                kubectl get secret ${{ inputs.ingress-tls-secret }} -n ${{ inputs.ingress-tls-secret-ns }} -o yaml | \
-                sed 's/namespace: ${{ inputs.ingress-tls-secret-ns }}/namespace: ${{ needs.var.outputs.ns }}/' | \
+            if [[ $(kubectl -n ${{ needs.var.outputs.ns }} get secret | grep -E '(^|\s)${{ needs.var.outputs.ingress-tls-secret }}($|\s)') ]]; then
+               echo "Secret '${{ needs.var.outputs.ingress-tls-secret }}' in the namespace '${{ needs.var.outputs.ns }}' already exists"
+            elif [[ $(kubectl -n default get secret | grep -E '(^|\s)${{ needs.var.outputs.ingress-tls-secret }}($|\s)') ]]; then
+                echo "Import '${{ needs.var.outputs.ingress-tls-secret }}' private key for SSL certificate from the '${{ needs.var.outputs.ingress-tls-secret-ns }}' namespace"
+                kubectl get secret ${{ needs.var.outputs.ingress-tls-secret }} -n ${{ needs.var.outputs.ingress-tls-secret-ns }} -o yaml | \
+                sed 's/namespace: ${{ needs.var.outputs.ingress-tls-secret-ns }}/namespace: ${{ needs.var.outputs.ns }}/' | \
                 kubectl create -f -
             fi
           fi
@@ -301,13 +313,13 @@ jobs:
   
       - name: docker registry secret
         run: |  
-          if [[ $(kubectl get secrets -n=${{ needs.var.outputs.ns }} | grep -E '(^|\s)${{ inputs.docker-registry-secret }}($|\s)') ]]; then
-            echo "Secret '${{ inputs.docker-registry-secret }}' already exists"
+          if [[ $(kubectl get secrets -n=${{ needs.var.outputs.ns }} | grep -E '(^|\s)${{ needs.var.outputs.docker-registry-secret }}($|\s)') ]]; then
+            echo "Secret '${{ needs.var.outputs.docker-registry-secret }}' already exists"
           else
-            echo "Create a secret '${{ inputs.docker-registry-secret }}' (used within the HELM chart)"
-            kubectl create secret docker-registry ${{ inputs.docker-registry-secret }} \
+            echo "Create a secret '${{ needs.var.outputs.docker-registry-secret }}' (used within the HELM chart)"
+            kubectl create secret docker-registry ${{ needs.var.outputs.docker-registry-secret }} \
              --docker-server=https://ghcr.io \
-             --docker-username=${{ inputs.repo-owner }} \
+             --docker-username=${{ ${{ needs.var.outputs.organization }} }} \
              --docker-password=${{ secrets.READ_PACKAGES_LOCAL }} \
              -n=${{ needs.var.outputs.ns }} \
              -o yaml
@@ -330,7 +342,7 @@ jobs:
             --install --wait --timeout 180s -n ${{ needs.var.outputs.ns }}  \
             --debug \
             --set fullnameOverride=${{ needs.var.outputs.short-name }} \
-            --set image.repository=${{ env.IMAGE_BASE_PATH }}${{ needs.var.outputs.short-name }} \
+            --set image.repository=${{ env.IMAGE_BASE_PATH }}${{ needs.var.outputs.organization }}/${{ needs.var.outputs.short-name }} \
             --set image.tag=${{ steps.get-version.outputs.version }} \
             --set ingress.enabled=${{ inputs.ingress-enabled }} \
             --set ingress.name=${{ needs.var.outputs.ingress }} \

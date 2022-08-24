@@ -12,7 +12,7 @@ on:
       organization:
         type: string
         description: "github organization / user of the repo"
-        required: true
+        required: false
       repo-prefix-convention:
         type: string
         description: "expected prefix of the repo name"
@@ -37,7 +37,7 @@ on:
         required: true  
 
 env: # https://docs.github.com/en/actions/learn-github-actions/environment-variables
-  BASE_PATH: ghcr.io/${{ inputs.organization }}/
+  BASE_PATH: ghcr.io/
 
 jobs:
   docker:
@@ -65,9 +65,25 @@ jobs:
       - id: get-version
         uses: weknow-network/get-dotnet-version-action@v2
 
+      - uses: actions/checkout@v3 
+        with:
+         repository: weknow-network/weknow-workflows
+         path: ci
+         ref: ${{ env.BRANCH }}
+
+      - id: cluster-info
+        # if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+        uses: ./ci/.github/actions/eks-cluster-info  
+        with:
+          organization: ${{ inputs.organization }}
+
+      - name: Cluster info validation
+        run: |
+          echo ${{ steps.cluster-info.outputs.organization }}  
+
       - name: Full image path
         id: full-image-path
-        run: echo ::set-output name=value::${{ env.BASE_PATH }}${{ steps.image.outputs.value }}
+        run: echo ::set-output name=value::${{ env.BASE_PATH }}${{ steps.cluster-info.outputs.organization }}/${{ steps.image.outputs.value }}
 
       - name: checkout docker-file + nuget template
         uses: actions/checkout@v3 # fetch Dockerfile + nuget configuration template
