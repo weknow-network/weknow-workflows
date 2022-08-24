@@ -321,7 +321,7 @@ jobs:
             echo "Create a secret '${{ needs.var.outputs.docker-registry-secret }}' (used within the HELM chart)"
             kubectl create secret docker-registry ${{ needs.var.outputs.docker-registry-secret }} \
              --docker-server=https://ghcr.io \
-             --docker-username=${{ ${{ needs.var.outputs.organization }} }} \
+             --docker-username=${{ needs.var.outputs.organization }} \
              --docker-password=${{ secrets.READ_PACKAGES_LOCAL }} \
              -n=${{ needs.var.outputs.ns }} \
              -o yaml
