@@ -17,10 +17,6 @@ on:
         type: string
         description: "expected prefix of the repo name"
         required: true
-      repo-owner:
-        type: string
-        description: "the repo owner"
-        required: true
       project:
         type: string
         description: "the name of the project directory"
@@ -30,6 +26,10 @@ on:
         description: "the name of the assembly prefix prefix.project.dll"
         required: false
         default: Weknow.Backend.
+      # repo-owner:
+      #   type: string
+      #   description: "the repo owner"
+      #   required: true
 
     secrets:
       UPLOAD_PACKAGE_LOCAL:
