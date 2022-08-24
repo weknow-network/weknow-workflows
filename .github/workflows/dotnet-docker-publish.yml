@@ -38,6 +38,7 @@ on:
 
 env: # https://docs.github.com/en/actions/learn-github-actions/environment-variables
   BASE_PATH: ghcr.io/
+  BRANCH: release/2022-08-21
 
 jobs:
   docker:
@@ -65,7 +66,8 @@ jobs:
       - id: get-version
         uses: weknow-network/get-dotnet-version-action@v2
 
-      - uses: actions/checkout@v3 
+      - name: Checkout local actions
+        uses: actions/checkout@v3 
         with:
          repository: weknow-network/weknow-workflows
          path: ci

@@ -127,7 +127,8 @@ jobs:
         id: ns
         run: echo ::set-output name=value::$(echo "wk-${{ steps.key.outputs.value }}")
   
-      - uses: actions/checkout@v3 
+      - name: Checkout local actions
+        uses: actions/checkout@v3 
         with:
          repository: weknow-network/weknow-workflows
          path: ci
