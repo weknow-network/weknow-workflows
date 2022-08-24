@@ -69,7 +69,8 @@ jobs:
         id: full-image-path
         run: echo ::set-output name=value::${{ env.BASE_PATH }}${{ steps.image.outputs.value }}
 
-      - uses: actions/checkout@v3 # fetch Dockerfile + nuget configuration template
+      - name: checkout docker-file + nuget template
+        uses: actions/checkout@v3 # fetch Dockerfile + nuget configuration template
         with:
          repository: weknow-network/weknow-dockerfiles
          path: docker-file
@@ -78,7 +79,6 @@ jobs:
       - name: modify nuget.config
         run: |
           sed -i -e "s/USER/bnayae/g" -e "s/PW/${{ secrets.UPLOAD_PACKAGE_LOCAL }}/g" ./docker-file/dotnet/nuget.config.template.xml 
-          rm ./nuget.config 
           cp ./docker-file/dotnet/nuget.config.template.xml ./nuget.config
         shell: bash
 
