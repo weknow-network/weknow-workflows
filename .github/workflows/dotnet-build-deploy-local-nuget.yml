@@ -68,8 +68,8 @@ jobs:
         run: dotnet test --filter Category=CI --configuration ${{ inputs.build-config }} --no-restore --no-build --verbosity normal -o out
         shell: bash      
   
-      # - name: GitHub Package Registry Tool Install
-      #   run: dotnet tool install --global --verbosity minimal --no-cache gpr
+      - name: GitHub Package Registry Tool Install
+        run: dotnet tool install --global --verbosity minimal --no-cache gpr
           
       - name: NuGet Push (repo = ${{ github.repository }}) 
         run: |
