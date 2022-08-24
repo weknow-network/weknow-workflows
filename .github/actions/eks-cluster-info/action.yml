@@ -107,7 +107,7 @@ runs:
             echo "::set-output name=secret::${{ inputs.ingress-tls-secret }}"
         fi  
         if [[ "${{ inputs.ingress-tls-secret-ns }}" == "" ]]; then
-            echo "::set-output name=secret-ns::kube-system
+            echo "::set-output name=secret-ns::cert-manager
         else
             echo "::set-output name=secret-ns::${{ inputs.ingress-tls-secret-ns }}"
         fi  
