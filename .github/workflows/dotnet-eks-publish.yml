@@ -91,7 +91,7 @@ on:
 
 env: # https://docs.github.com/en/actions/learn-github-actions/environment-variables
   IMAGE_BASE_PATH: ghcr.io/
-  BRANCH: release/2022-08-21
+  BRANCH: release/2022-09-15
   
 jobs:
   var:
