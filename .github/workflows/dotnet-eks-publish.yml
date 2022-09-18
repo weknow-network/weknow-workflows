@@ -129,22 +129,7 @@ jobs:
   
       - name: Namespace
         id: ns
-        run: echo ::set-output name=value::$(echo "wk-${{ steps.key.outputs.value }}")
-      
-
-      - name: Extract branch name
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
-        id: extract_branch
-        shell: bash
-  
-      - name: Branch name
-        run: echo running on branch [${{ steps.extract_branch.outputs.branch }}
-        shell: bash
-  
-      - name: Branch name (simple)
-        run: echo running on branch [${GITHUB_REF##*/}]
-        shell: bash
-  
+        run: echo ::set-output name=value::$(echo "wk-${{ steps.key.outputs.value }}")  
 
       - name: Checkout local actions
         uses: actions/checkout@v3 
