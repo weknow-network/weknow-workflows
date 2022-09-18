@@ -1,0 +1,114 @@
+# doc: https://docs.github.com/en/actions
+# custom: https://docs.github.com/en/actions/creating-actions/creating-a-composite-action
+# variables: https://docs.github.com/en/actions/learn-github-actions/environment-variables
+# secrets: https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#example-17
+
+# Defaults
+  # cluster name: wk-us-prod-eks
+  # cluster region: us-east-2
+  # kubectl-version
+    # "v1.23.6" *
+    # "v1.18.5"
+    # https://www.gitclear.com/open_repos/kubernetes/kubernetes/releases
+
+name: 'EKS cluster info'
+description: 'Providing default + override option to get cluster info'
+inputs:
+  cluster-name:
+    description: "The cluster name"
+    required: false
+  cluster-region:
+    description: "The cluster region"
+    required: false
+  organization: 
+    description: "The organization"
+    required: false
+  kubectl-version:
+    description: "kubectl version"
+    required: false
+  docker-registry-secret:
+    description: "The docker secret (hold docker registry's credentials)"
+    required: false
+  ingress-tls-secret:
+    description: "the name of the ingress tls"
+    required: false
+  ingress-tls-secret-ns:
+    description: "the namespace of the ingress tls"
+    required: false
+    
+outputs:
+  cluster-name:
+    description: "The cluster name"
+    value: ${{ steps.cluster.outputs.name }}
+  cluster-region:
+    description: "The cluster region"
+    value: ${{ steps.cluster.outputs.region }}
+  organization:
+    description: "The organization"
+    value: ${{ steps.organization.outputs.name }}
+  kubectl-version:
+    description: "The kubectl version"
+    value: ${{ steps.kubectl.outputs.version }}
+  docker-registry-secret:
+    description: "The docker secret (hold docker registry's credentials)"
+    value: ${{ steps.docker.outputs.secret }}
+  ingress-tls-secret:
+    description: "the name of the ingress tls"
+    value: ${{ steps.ingress-tls.outputs.secret }}
+  ingress-tls-secret-ns:
+    description: "the namespace of the ingress tls"
+    value: ${{ steps.ingress-tls.outputs.secret-ns }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: cluster
+      run: |
+        if [[ "${{ inputs.cluster-name }}" == "" ]]; then
+            echo "::set-output name=name::prod-wk-eks-2022-09-15"
+        else
+            echo "::set-output name=name::${{ inputs.cluster-name }}"
+        fi  
+        if [[ "${{ inputs.cluster-region }}" == "" ]]; then
+            echo "::set-output name=region::us-east-2"
+        else
+            echo "::set-output name=region::${{ inputs.cluster-region }}"
+        fi  
+      shell: bash
+    - id: kubectl
+      run: |
+        if [[ "${{ inputs.kubectl-version }}" == "" ]]; then
+            echo "::set-output name=version::v1.23.6"
+        else
+            echo "::set-output name=version::${{ inputs.kubectl-version }}"
+        fi  
+      shell: bash
+    - id: organization
+      run: |
+        if [[ "${{ inputs.organization }}" == "" ]]; then
+            echo "::set-output name=name::weknow-network"
+        else
+            echo "::set-output name=name::${{ inputs.organization }}"
+        fi  
+      shell: bash
+    - id: docker
+      run: |
+        if [[ "${{ inputs.docker-registry-secret }}" == "" ]]; then
+            echo "::set-output name=secret::github-pkg"
+        else
+            echo "::set-output name=secret::${{ inputs.docker-registry-secret }}"
+        fi  
+      shell: bash
+    - id: ingress-tls
+      run: |
+        if [[ "${{ inputs.ingress-tls-secret }}" == "" ]]; then
+            echo "::set-output name=secret::cert-prod-wildcard"
+        else
+            echo "::set-output name=secret::${{ inputs.ingress-tls-secret }}"
+        fi  
+        if [[ "${{ inputs.ingress-tls-secret-ns }}" == "" ]]; then
+            echo "::set-output name=secret-ns::cert-manager"
+        else
+            echo "::set-output name=secret-ns::${{ inputs.ingress-tls-secret-ns }}"
+        fi  
+      shell: bash

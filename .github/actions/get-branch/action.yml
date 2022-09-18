@@ -1,0 +1,42 @@
+# doc: https://docs.github.com/en/actions
+# custom: https://docs.github.com/en/actions/creating-actions/creating-a-composite-action
+# variables: https://docs.github.com/en/actions/learn-github-actions/environment-variables
+# secrets: https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#example-17
+
+# Defaults
+  # cluster name: wk-us-prod-eks
+  # cluster region: us-east-2
+  # kubectl-version
+    # "v1.23.6" *
+    # "v1.18.5"
+    # https://www.gitclear.com/open_repos/kubernetes/kubernetes/releases
+
+name: 'EKS cluster info'
+description: 'Providing default + override option to get cluster info'
+    
+outputs:
+  branch:
+    description: "The branch name"
+    value: ${{ steps.branch.outputs.name }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Extract branch name
+      run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+      id: extract_branc
+      shell: bash
+
+    - name: Branch name
+      run: echo running on branch [${{ steps.extract_branch.outputs.branch }}
+      shell: bash
+
+    - name: Branch name (simple)
+      run: echo running on branch [${GITHUB_REF##*/}]
+      shell: bash
+     
+    - id: branch
+      name: Set Output
+      run: |
+        echo "::set-output name=name::${{ steps.extract_branch.outputs.branch }}"
+      shell: bash
