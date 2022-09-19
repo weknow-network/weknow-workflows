@@ -65,7 +65,7 @@ runs:
     - id: cluster
       run: |
         if [[ "${{ inputs.cluster-name }}" == "" ]]; then
-            echo "::set-output name=name::prod-wk-eks-2022-09-15"
+            echo "::set-output name=name::prod-wk-eks-2022-09-18"
         else
             echo "::set-output name=name::${{ inputs.cluster-name }}"
         fi  
