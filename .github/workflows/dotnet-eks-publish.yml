@@ -25,6 +25,11 @@ on:
         type: string
         description: "github organization / user of the repo"
         required: false
+      replica-count:
+        type: string
+        description: "how many replica to spin"
+        required: false
+        default: 1
       key: 
         type: string
         description: "a short name used for namespace and ingress host (without the version)"
@@ -347,6 +352,7 @@ jobs:
           helm upgrade ${{ needs.var.outputs.short-name }} weknow-charts/net-micro-svc \
             --install --wait --timeout 180s -n ${{ needs.var.outputs.ns }}  \
             --debug \
+            --set replicaCount=${{ inputs.replica-count }} \
             --set fullnameOverride=${{ needs.var.outputs.short-name }} \
             --set image.repository=${{ env.IMAGE_BASE_PATH }}${{ needs.var.outputs.organization }}/${{ needs.var.outputs.short-name }} \
             --set image.tag=${{ steps.get-version.outputs.version }} \
