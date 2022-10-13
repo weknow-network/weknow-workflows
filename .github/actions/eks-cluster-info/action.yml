@@ -63,9 +63,11 @@ runs:
   using: "composite"
   steps:
     - id: cluster
+      env: 
+        DEFAULT_CLUSTER: prod-wk-eks-2022-10-13
       run: |
         if [[ "${{ inputs.cluster-name }}" == "" ]]; then
-            echo "::set-output name=name::prod-wk-eks-2022-09-18"
+            echo "::set-output name=name::${DEFAULT_CLUSTER}"
         else
             echo "::set-output name=name::${{ inputs.cluster-name }}"
         fi  
