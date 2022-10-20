@@ -19,6 +19,11 @@ on:
         description: "The .NET version."
         required: false
         default: "6.0.x"
+      test-project:
+        type: string
+        description: "The test project."
+        required: false
+        default: ""
       include-prerelease:
         type: boolean
         description: "Indicate whether to include prerelease .NET version."
@@ -58,7 +63,7 @@ jobs:
         shell: bash
 
       - name: Test
-        run: dotnet test --configuration ${{ inputs.build-config }} --no-restore --no-build --verbosity normal -o out
+        run: dotnet test ${{ inputs.test-project }} --configuration ${{ inputs.build-config }} --no-restore --no-build --verbosity normal -o out
         # run: dotnet test --filter Category=CI --configuration ${{ inputs.build-config }} --no-restore --no-build --verbosity normal -o out
         shell: bash
           
