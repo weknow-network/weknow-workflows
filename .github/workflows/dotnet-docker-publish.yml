@@ -38,7 +38,7 @@ on:
 
 env: # https://docs.github.com/en/actions/learn-github-actions/environment-variables
   BASE_PATH: ghcr.io/
-  BRANCH: release/2022-08-21
+  BRANCH: release/2022-11-15/net7
 
 jobs:
   docker:
@@ -93,7 +93,7 @@ jobs:
         with:
          repository: weknow-network/weknow-dockerfiles
          path: docker-file
-         ref: release/2022-08-23
+         ref: ${{ env.BRANCH }}
 
       - name: modify nuget.config
         run: |
