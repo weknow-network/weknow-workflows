@@ -71,16 +71,16 @@ jobs:
       - name: GitHub Package Registry Tool Install
         run: dotnet tool install --global --verbosity minimal --no-cache gpr
           
-      # - name: NuGet Push (repo = ${{ github.repository }}) 
-      #   run: |
-      #     gpr push --api-key ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --repository ${{ github.repository }} --retries 3 ./out/**/*.nupkg || true
-      #     gpr push --api-key ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --repository ${{ github.repository }} --retries 3 ./out/**/*.snupkg || true
-     
-      - name: Publish NuGet (repo = ${{ github.repository }}) 
+      - name: NuGet Push (repo = ${{ github.repository }}) 
         run: |
-          dotnet nuget add source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json -n github-ci -p ${{ secrets.UPLOAD_PACKAGE_LOCAL }} -u bnayae
-          dotnet nuget push ./out/**/*.nupkg --source github-ci --skip-duplicate --no-symbols false
-          dotnet nuget push ./out/**/*.snupkg --source github-ci --skip-duplicate --no-symbols false
+          gpr push --api-key ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --repository ${{ github.repository }} --retries 3 ./out/**/*.nupkg || true
+          gpr push --api-key ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --repository ${{ github.repository }} --retries 3 ./out/**/*.snupkg || true
+     
+      # - name: Publish NuGet (repo = ${{ github.repository }}) 
+      #   run: |
+      #     dotnet nuget add source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json -n github-ci -p ${{ secrets.UPLOAD_PACKAGE_LOCAL }} -u bnayae
+      #     dotnet nuget push ./out/**/*.nupkg --source github-ci --skip-duplicate --no-symbols false
+      #     dotnet nuget push ./out/**/*.snupkg --source github-ci --skip-duplicate --no-symbols false
         # dotnet nuget add source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json --name github-ci -p ${{ github.repository_owner }} -u bnayae
         # dotnet nuget add source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json --name github-ci --username ${{ github.repository_owner }} --password ${{ github.token }} --store-password-in-clear-text
         # dotnet nuget push ./out/**/*.nupkg --source github-ci --skip-duplicate --no-symbols false
