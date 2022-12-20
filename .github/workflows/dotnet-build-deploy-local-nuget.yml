@@ -78,7 +78,7 @@ jobs:
      
       - name: Publish NuGet (repo = ${{ github.repository }}) 
         run: |
-          dotnet nuget add source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json --name github-ci -k ${{ secrets.UPLOAD_PACKAGE_LOCAL }} 
+          dotnet nuget add source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json -n github-ci -p ${{ secrets.UPLOAD_PACKAGE_LOCAL }} -u bnayae
           dotnet nuget push ./out/**/*.nupkg --source github-ci --skip-duplicate --no-symbols false
           dotnet nuget push ./out/**/*.snupkg --source github-ci --skip-duplicate --no-symbols false
         # dotnet nuget add source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json --name github-ci -p ${{ github.repository_owner }} -u bnayae
