@@ -65,7 +65,7 @@ jobs:
         # run: dotnet build  --configuration ${{ inputs.build-config }} --no-restore -o out -p:Version=${{ steps.get-version.outputs.version }}
         shell: bash
       - name: .NET Test
-        run: dotnet test --filter Category=CI --configuration ${{ inputs.build-config }} --no-restore --no-build --verbosity normal -o out
+        run: dotnet test --filter Category=CI --configuration ${{ inputs.build-config }} --no-restore --no-build --verbosity normal -o out /p:CollectCoverage=true /p:CoverletOutput=../Assets/Coverage/ /p:MergeWith="../Assets/Coverage/coverage.json" /p:CoverletOutputFormat=\"cobertura,json\" -m:1
         shell: bash      
   
       - name: GitHub Package Registry Tool Install
