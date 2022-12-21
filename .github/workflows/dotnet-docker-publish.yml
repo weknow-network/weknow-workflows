@@ -55,7 +55,7 @@ jobs:
       - name: Short Image Name
         id: short-image-name
         run: |
-            echo ::set-output name=value::$(echo "${{ inputs.project }}" | tr '.' '-' | tr '[:upper:]' '[:lower:]')
+            echo ::set-output name=value::$(echo "${{ inputs.project }}" | tr '.' '-' |  tr '/' '-' | tr '[:upper:]' '[:lower:]')
         shell: bash
 
       - name: Image
