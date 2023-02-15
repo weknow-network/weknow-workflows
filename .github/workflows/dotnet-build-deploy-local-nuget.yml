@@ -62,11 +62,11 @@ jobs:
         shell: bash
 
       - name: .NET Build 
-        run: dotnet build  --configuration ${{ inputs.build-config }} --no-restore -o out 
-        # run: dotnet build  --configuration ${{ inputs.build-config }} --no-restore -o out -p:Version=${{ steps.get-version.outputs.version }}
+        run: dotnet build  --configuration ${{ inputs.build-config }} --no-restore 
+        # run: dotnet build  --configuration ${{ inputs.build-config }} --no-restore -p:Version=${{ steps.get-version.outputs.version }}
         shell: bash
       - name: .NET Test
-        run: dotnet test --filter Category=CI --configuration ${{ inputs.build-config }} --no-restore --no-build --verbosity normal -o out /p:CollectCoverage=true /p:CoverletOutput=../Assets/Coverage/ /p:MergeWith="../Assets/Coverage/coverage.json" /p:CoverletOutputFormat=\"cobertura,json\" -m:1
+        run: dotnet test --filter Category=CI --configuration ${{ inputs.build-config }} --no-restore --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutput=../Assets/Coverage/ /p:MergeWith="../Assets/Coverage/coverage.json" /p:CoverletOutputFormat=\"cobertura,json\" -m:1
         shell: bash      
   
       - name: GitHub Package Registry Tool Install
@@ -74,8 +74,8 @@ jobs:
           
       - name: NuGet Push (repo = ${{ github.repository }}) 
         run: |
-          gpr push --api-key ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --repository ${{ github.repository }} --retries 3 ./out/**/*.nupkg || true
-          gpr push --api-key ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --repository ${{ github.repository }} --retries 3 ./out/**/*.snupkg || true
+          gpr push --api-key ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --repository ${{ github.repository }} --retries 3 ./**/*.nupkg || true
+          gpr push --api-key ${{ secrets.UPLOAD_PACKAGE_LOCAL }} --repository ${{ github.repository }} --retries 3 ./**/*.snupkg || true
      
       # - name: Publish NuGet (repo = ${{ github.repository }}) 
       #   run: |
