@@ -19,9 +19,9 @@ on:
         description: "The .NET version."
         required: false
         default: "6.0.x"
-      test-flags:
+      test-switch:
         type: string
-        description: "The test flags like: `--filter category=ci`"
+        description: "The test switch like: `--filter category=ci`"
         required: false
         default: ""
       test-project:
@@ -68,7 +68,7 @@ jobs:
         shell: bash
 
       - name: Test 
-        run: dotnet test ${{ inputs.test-project }} ${{ inputs.test-project }} --configuration ${{ inputs.build-config }} --no-restore --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutput=../Assets/Coverage/ /p:MergeWith="../Assets/Coverage/coverage.json" /p:CoverletOutputFormat=\"cobertura,json\" -m:1
+        run: dotnet test ${{ inputs.test-project }} ${{ inputs.test-switch }} --configuration ${{ inputs.build-config }} --no-restore --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutput=../Assets/Coverage/ /p:MergeWith="../Assets/Coverage/coverage.json" /p:CoverletOutputFormat=\"cobertura,json\" -m:1
         # run: dotnet test --filter Category=CI --configuration ${{ inputs.build-config }} --no-restore --no-build --verbosity normal 
         shell: bash
         # https://blog.bitscry.com/2022/09/07/creating-a-code-coverage-report-for-multiple-projects/
