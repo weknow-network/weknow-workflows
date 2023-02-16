@@ -19,6 +19,11 @@ on:
         description: "The .NET version."
         required: false
         default: "6.0.x"
+      test-flags:
+        type: string
+        description: "The test flags like: `--filter category=ci`"
+        required: false
+        default: ""
       test-project:
         type: string
         description: "The test project."
@@ -63,31 +68,10 @@ jobs:
         shell: bash
 
       - name: Test 
-        run: dotnet test ${{ inputs.test-project }} --configuration ${{ inputs.build-config }} --no-restore --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutput=../Assets/Coverage/ /p:MergeWith="../Assets/Coverage/coverage.json" /p:CoverletOutputFormat=\"cobertura,json\" -m:1
+        run: dotnet test ${{ inputs.test-project }} ${{ inputs.test-project }} --configuration ${{ inputs.build-config }} --no-restore --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutput=../Assets/Coverage/ /p:MergeWith="../Assets/Coverage/coverage.json" /p:CoverletOutputFormat=\"cobertura,json\" -m:1
         # run: dotnet test --filter Category=CI --configuration ${{ inputs.build-config }} --no-restore --no-build --verbosity normal 
         shell: bash
         # https://blog.bitscry.com/2022/09/07/creating-a-code-coverage-report-for-multiple-projects/
-
-      # - name: Code coverage report
-      #   uses: irongut/CodeCoverageSummary@v1.3.0
-      #   with:
-      #     filename: ./Assets/Coverage/coverage.cobertura.xml
-      #     badge: true
-      #     fail_below_min: false
-      #     format: markdown
-      #     hide_branch_rate: false
-      #     hide_complexity: true
-      #     indicators: true
-      #     output: both
-      #     thresholds: '60 80'
-      
-      # - name: Add Coverage PR Comment
-      #   uses: marocchino/sticky-pull-request-comment@v2
-      #   if: github.event_name == 'pull_request'
-      #   with:
-      #     header: codeCoverage
-      #     recreate: true
-      #     path: code-coverage-results.md     
 
       - name: Push generated package
         run: dotnet nuget push ./**/*.nupkg -k ${{ secrets.NUGET_PUBLISH }} -s https://api.nuget.org/v3/index.json --skip-duplicate 
