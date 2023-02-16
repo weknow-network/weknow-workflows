@@ -59,12 +59,12 @@ jobs:
         shell: bash
 
       - name: .NET Build 
-        run: dotnet build  --configuration ${{ inputs.build-config }} --no-restore -o out 
+        run: dotnet build  --configuration ${{ inputs.build-config }} --no-restore 
         shell: bash
 
       - name: Test 
-        run: dotnet test ${{ inputs.test-project }} --configuration ${{ inputs.build-config }} --no-restore --no-build --verbosity normal -o out /p:CollectCoverage=true /p:CoverletOutput=../Assets/Coverage/ /p:MergeWith="../Assets/Coverage/coverage.json" /p:CoverletOutputFormat=\"cobertura,json\" -m:1
-        # run: dotnet test --filter Category=CI --configuration ${{ inputs.build-config }} --no-restore --no-build --verbosity normal -o out
+        run: dotnet test ${{ inputs.test-project }} --configuration ${{ inputs.build-config }} --no-restore --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutput=../Assets/Coverage/ /p:MergeWith="../Assets/Coverage/coverage.json" /p:CoverletOutputFormat=\"cobertura,json\" -m:1
+        # run: dotnet test --filter Category=CI --configuration ${{ inputs.build-config }} --no-restore --no-build --verbosity normal 
         shell: bash
         # https://blog.bitscry.com/2022/09/07/creating-a-code-coverage-report-for-multiple-projects/
 
@@ -90,4 +90,4 @@ jobs:
       #     path: code-coverage-results.md     
 
       - name: Push generated package
-        run: dotnet nuget push ./**/out/*.nupkg -k ${{ secrets.NUGET_PUBLISH }} -s https://api.nuget.org/v3/index.json --skip-duplicate 
+        run: dotnet nuget push ./**/*.nupkg -k ${{ secrets.NUGET_PUBLISH }} -s https://api.nuget.org/v3/index.json --skip-duplicate 
