@@ -171,7 +171,7 @@ jobs:
           aws-region: ${{ inputs.eks-region }}
   
       - name: Kubectl tool installer
-        uses: Azure/setup-kubectl@v1
+        uses: Azure/setup-kubectl@v3
       
       - id: install-aws-cli
         uses: unfor19/install-aws-cli-action@v1
@@ -235,7 +235,7 @@ jobs:
           aws-region: ${{ inputs.eks-region }}
   
       - name: Kubectl tool installer
-        uses: Azure/setup-kubectl@v1
+        uses: Azure/setup-kubectl@v3
       
       - id: install-aws-cli
         uses: unfor19/install-aws-cli-action@v1
